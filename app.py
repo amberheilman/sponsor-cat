@@ -9,6 +9,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from wtforms import Form, StringField, PasswordField, validators
 import uuid
+import waitress
 
 app = Flask(__name__)
 CORS(app)
@@ -160,3 +161,7 @@ def is_safe_url(target):
         urllib.parse.urljoin(flask.request.host_url, target))
     return test_url.scheme in ('http', 'https') and \
         ref_url.netloc == test_url.netloc
+
+
+if __name__ == "__main__":
+    waitress.serve(app)
