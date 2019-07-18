@@ -164,4 +164,4 @@ def is_safe_url(target):
 
 
 if __name__ == "__main__":
-    waitress.serve(app)
+    waitress.serve(app, port=os.environ.get('PORT', 5000))
