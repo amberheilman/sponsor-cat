@@ -1,0 +1,31 @@
+html, body {
+    background-color: #52bad1;
+    font-family: sans-serif;
+    font-family: Ubuntu;
+    font-size: 15px;
+    line-height: 20px;
+}
+.container {
+    margin-top: 45px;
+    width: 30%;
+    background-color: white;
+    padding: 50px;
+    border-radius: 20px;
+}
+.heading {
+    text-align: center;
+}
+.container-login {
+    padding-top: 10%;
+}
+@media all and (max-width: 1000px) {
+    .container {
+        width: 70%;
+    }
+}
+
+@media all and (max-width: 500px) {
+    .container {
+        width: 100%;
+    }
+}
