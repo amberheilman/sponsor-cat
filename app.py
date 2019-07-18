@@ -12,7 +12,7 @@ import uuid
 
 app = Flask(__name__)
 CORS(app)
-app.conn = psycopg2.connect(os.environ['POSTGRES_DSN'])  # TODO: reconnect logic
+app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
 login_manager.init_app(app)
