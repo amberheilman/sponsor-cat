@@ -22,7 +22,12 @@ setup(
     python_requires='>=3.6.0',
     url='https://github.com/amberheilman/sponsor-cat',
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    install_requires=open('requirements.txt').read(),
+    install_requires=['flask',
+                      'flask-cors',
+                      'flask-login',
+                      'Flask-WTF',
+                      'psycopg2',
+                      'waitress'],
     include_package_data=True,
     license='MIT',
     classifiers=[
