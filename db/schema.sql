@@ -1,11 +1,3 @@
-CREATE TABLE IF NOT EXISTS cats (
-    id UUID PRIMARY KEY NOT NULL,
-    image_url TEXT NOT NULL,
-    sponsorship_cost NUMERIC NOT NULL,
-    name TEXT NOT NULL,
-    self_link TEXT UNIQUE NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS sponsorships (
     id UUID PRIMARY KEY NOT NULL,
     sponsored_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
