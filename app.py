@@ -96,6 +96,7 @@ def sponsor():
                          body['cat_self_link'],
                          body['cat_img']))
             cur.close()
+        app.conn.commit()
     except psycopg2.Error:
         app.logger.exception('Encountered db error while inserting sponsor')
         pass

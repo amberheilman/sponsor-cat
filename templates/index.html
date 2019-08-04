@@ -51,7 +51,8 @@
       <thead>
         <tr>
           <th scope="col">Sponsor ID</th>
-          <th scope="col">Pet</th>
+          <th scope="col">Cat Name</th>
+          <th scope="col">Cat</th>
           <th scope="col">Sponsored Time</th>
           <th scope="col">Sponsor Name</th>
           <th scope="col">Sponsor Email</th>
@@ -63,7 +64,8 @@
         {% for cat in cats %}
         <tr>
           <td>{{ cat['id'] }}</td>
-          <td><a href="{{ cat['self_link'] }}"><img src="{{ cat['img'] }}"></a></td>
+          <td>{{ cat['cat_name'] }}</td>
+          <td><a href="{{ cat['cat_self_link'] }}"><img src="{{ cat['cat_img'] }}"></a></td>
           <td>{{ cat['sponsored_at'] }}</td>
           <td>{{ cat['name'] }}</td>
           <td>{{ cat['email'] }}</td>

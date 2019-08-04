@@ -13,8 +13,9 @@ CREATE TABLE IF NOT EXISTS sponsorships (
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     paypal_order_id TEXT UNIQUE NOT NULL,
-    self_link TEXT NOT NULL,
-    img TEXT
+    cat_self_link TEXT NOT NULL,
+    cat_img TEXT,
+    cat_name TEXT
 );
 
 CREATE TABLE IF NOT EXISTS users (
