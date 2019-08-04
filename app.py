@@ -152,8 +152,8 @@ class User:
             if data:
                 pw_hash = hashlib.sha256(
                     f'{self.password}{data[2]}'.encode()).hexdigest()
-            if pw_hash == data[1]:
-                return data[0]
+                if pw_hash == data[1]:
+                    return data[0]
             return str(uuid.uuid4())
 
 
