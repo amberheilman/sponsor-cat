@@ -75,6 +75,9 @@
         {% endfor %}
       </tbody>
     </table>
+  {% if not cats %}
+    <h2 class="center">No sponsorships found</h2>
+  {% endif %}
   </div>
 </body>
 </html>
