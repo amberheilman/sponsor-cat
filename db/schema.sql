@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS sponsorships (
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
     salt TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
     modified_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc')

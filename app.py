@@ -1,3 +1,4 @@
+import hashlib
 import os
 import urllib
 
@@ -19,7 +20,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 SELECT_USER_BY_ID_SQL = 'SELECT * FROM users WHERE id=%s;'
-SELECT_USER_SQL = 'SELECT id FROM users WHERE email=%s AND password=%s;'
+SELECT_USER_SQL = 'SELECT id, password_hash, salt FROM users WHERE email=%s;'
 INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                       '            sponsor_amount,'
                       '            name, email, paypal_order_id,'
@@ -145,10 +146,14 @@ class User:
 
     def get_id(self):
         with app.conn.cursor() as cur:
-            cur.execute(SELECT_USER_SQL, (self.email, self.password))
+            cur.execute(SELECT_USER_SQL, (self.email,))
             data = cur.fetchone()
             cur.close()
-            return data[0] if data else str(uuid.uuid4())
+            pw_hash = hashlib.sha256(
+                f'{self.password}{data[2]}'.encode()).hexdigest()
+            if data and pw_hash == data[1]:
+                return data[0]
+            return str(uuid.uuid4())
 
 
 class LoginForm(Form):
