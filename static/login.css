@@ -10,7 +10,7 @@ html, body {
     width: 30%;
     background-color: white;
     padding: 50px;
-    border-radius: 20px;
+    box-shadow: 8px 8px 21px 5px darkslategrey;
 }
 .heading {
     text-align: center;
@@ -28,4 +28,18 @@ html, body {
     .container {
         width: 100%;
     }
+}
+.form-control {
+    font-size: 1.5rem;
+}
+.btn {
+    font-size: 1.5em;
+    padding: 5px 15px 5px 15px;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+}
+.btn:hover {
+    background-color: #52bad1;
+    color: white;
+    border-color: #52bad1;
 }
