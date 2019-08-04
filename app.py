@@ -149,9 +149,10 @@ class User:
             cur.execute(SELECT_USER_SQL, (self.email,))
             data = cur.fetchone()
             cur.close()
-            pw_hash = hashlib.sha256(
-                f'{self.password}{data[2]}'.encode()).hexdigest()
-            if data and pw_hash == data[1]:
+            if data:
+                pw_hash = hashlib.sha256(
+                    f'{self.password}{data[2]}'.encode()).hexdigest()
+            if pw_hash == data[1]:
                 return data[0]
             return str(uuid.uuid4())
 
