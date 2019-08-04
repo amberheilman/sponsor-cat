@@ -13,6 +13,10 @@ import uuid
 import waitress
 
 app = Flask(__name__)
+app.config.from_mapping({
+    "DEBUG": False,
+    "PREFERRED_URL_SCHEME": "https"
+})
 CORS(app)
 app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
