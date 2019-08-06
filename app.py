@@ -54,7 +54,7 @@ def index():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
     finally:
-        cur.close()
+        app.conn.close()
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
     return flask.render_template('index.html', cats=cats, scheme=scheme)
@@ -119,7 +119,7 @@ def sponsor():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
     finally:
-        cur.close()
+        app.conn.close()
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
@@ -146,7 +146,7 @@ def get_sponsored():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
     finally:
-        cur.close()
+        app.conn.close()
     return flask.jsonify(data)
 
 
