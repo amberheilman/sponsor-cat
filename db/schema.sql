@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS sponsorships (
     paypal_order_id TEXT UNIQUE NOT NULL,
     cat_self_link TEXT NOT NULL,
     cat_img TEXT,
-    cat_name TEXT
+    cat_name TEXT,
+    petfinder_id BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (

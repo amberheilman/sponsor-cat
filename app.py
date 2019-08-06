@@ -28,9 +28,12 @@ SELECT_USER_SQL = 'SELECT id, password_hash, salt FROM users WHERE email=%s;'
 INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                       '            sponsor_amount,'
                       '            name, email, paypal_order_id,'
-                      '            self_link, img)'
-                      '     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)')
+                      '            cat_self_link, cat_img, cat_name,'
+                      '            petfinder_id)'
+                      '     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)')
 SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
+SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
+                             ' WHERE petfinder_id IN ({})')
 
 
 @app.route("/index", methods=['GET'])
@@ -48,6 +51,8 @@ def index():
     except Exception:
         app.logger.exception('Encountered error while inserting sponsor')
         pass
+    finally:
+        cur.close()
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
     return flask.render_template('index.html', cats=cats, scheme=scheme)
@@ -99,7 +104,9 @@ def sponsor():
                          body['email'],
                          body['paypal_order_id'],
                          body['cat_self_link'],
-                         body['cat_img']))
+                         body['cat_img'],
+                         body['cat_name'],
+                         body['petfinder_id']))
             cur.close()
         app.conn.commit()
     except psycopg2.Error:
@@ -108,9 +115,35 @@ def sponsor():
     except Exception:
         app.logger.exception('Encountered error while inserting sponsor')
         pass
+    finally:
+        cur.close()
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
+
+
+@cross_origin(allow_headers=['Content-Type'], methods=['POST'])
+@app.route("/sponsored", methods=['POST'])
+def get_sponsored():
+    body = flask.request.get_json()
+    app.logger.debug('Received body %r', body)
+    cat_ids = [int(_id) for _id in body['cat_ids']]
+    sql = SELECT_SPONSORSHIPS_BY_ID.format(('%s, ' * len(cat_ids)).rstrip(', '))
+    data = {'cat_ids': []}
+    try:
+        with app.conn.cursor() as cur:
+            cur.execute(sql, cat_ids)
+            data['cat_ids'].extend([row[0] for row in cur.fetchall()])
+        app.conn.commit()
+    except psycopg2.Error:
+        app.logger.exception('Encountered db error while inserting sponsor')
+        pass
+    except Exception:
+        app.logger.exception('Encountered error while inserting sponsor')
+        pass
+    finally:
+        cur.close()
+    return flask.jsonify(data)
 
 
 @app.route("/logout")
