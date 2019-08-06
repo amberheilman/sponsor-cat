@@ -53,7 +53,8 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
 SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
-SELECT_RECEIPIENTS = 'SELECT * FROM recipients WHERE email_subscription="on"'
+SELECT_RECEIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
+
 
 @app.route("/index", methods=['GET'])
 @login_required
