@@ -185,6 +185,7 @@ def get_sponsored():
 @app.route('/sponsor-emails', methods=['GET', 'POST'])
 @login_required
 def sponsor_emails():
+    recipients = []
     if flask.request.method == 'GET':
         try:
             with app.conn.cursor() as cur:
