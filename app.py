@@ -53,7 +53,7 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
 SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
-SELECT_RECEIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
+SELECT_RECIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
 
 
 @app.route("/index", methods=['GET'])
@@ -139,21 +139,6 @@ def sponsor():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
 
-    try:
-        with app.conn.cursor() as cur:
-            cur.execute(SELECT_RECEIPIENTS)
-            recipients = cur.fetchall()
-            cur.close()
-        app.conn.commit()
-    except psycopg2.Error:
-        app.conn.rollback()
-        app.logger.exception('Encountered db error while inserting sponsor')
-        pass
-    except Exception:
-        app.conn.rollback()
-        app.logger.exception('Encountered error while inserting sponsor')
-        pass
-
     send_simple_message(recipients, cat_name=body['cat_name'], **body)
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -190,8 +175,8 @@ def sponsor_emails():
     if flask.request.method == 'GET':
         try:
             with app.conn.cursor() as cur:
-                cur.execute(SELECT_RECEIPIENTS)
-                recipients = cur.fetchall()
+                cur.execute(SELECT_RECIPIENTS)
+                recipients = [row[1] for row in cur.fetchall()]
                 cur.close()
             app.conn.commit()
         except psycopg2.Error:
