@@ -91,9 +91,9 @@ def login():
                                  error=error)
 
 
+@app.route("/sponsor", methods=['POST'])
 @cross_origin(origins=ALLOWED_ORIGINS,
               allow_headers=['Content-Type'], methods=['POST'])
-@app.route("/sponsor", methods=['POST'])
 def sponsor():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
@@ -125,9 +125,9 @@ def sponsor():
     return response
 
 
+@app.route("/sponsored", methods=['POST'])
 @cross_origin(origins=ALLOWED_ORIGINS,
               allow_headers=['Content-Type'], methods=['POST'])
-@app.route("/sponsored", methods=['POST'])
 def get_sponsored():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
