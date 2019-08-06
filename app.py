@@ -48,13 +48,13 @@ def index():
             cats = cur.fetchall()
             cur.close()
     except psycopg2.Error:
+        app.conn.rollback()
         app.logger.exception('Encountered db error while inserting sponsor')
         pass
     except Exception:
+        app.conn.rollback()
         app.logger.exception('Encountered error while inserting sponsor')
         pass
-    finally:
-        app.conn.close()
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
     return flask.render_template('index.html', cats=cats, scheme=scheme)
@@ -113,13 +113,13 @@ def sponsor():
             cur.close()
         app.conn.commit()
     except psycopg2.Error:
+        app.conn.rollback()
         app.logger.exception('Encountered db error while inserting sponsor')
         pass
     except Exception:
+        app.conn.rollback()
         app.logger.exception('Encountered error while inserting sponsor')
         pass
-    finally:
-        app.conn.close()
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
@@ -140,13 +140,13 @@ def get_sponsored():
             data['cat_ids'].extend([row[0] for row in cur.fetchall()])
         app.conn.commit()
     except psycopg2.Error:
+        app.conn.rollback()
         app.logger.exception('Encountered db error while inserting sponsor')
         pass
     except Exception:
+        app.conn.rollback()
         app.logger.exception('Encountered error while inserting sponsor')
         pass
-    finally:
-        app.conn.close()
     return flask.jsonify(data)
 
 
