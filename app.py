@@ -142,8 +142,6 @@ def sponsor():
 
 
 @app.route("/sponsored", methods=['POST'])
-@cross_origin(origins=ALLOWED_ORIGINS,
-              allow_headers=['Content-Type'], methods=['POST'])
 def get_sponsored():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
