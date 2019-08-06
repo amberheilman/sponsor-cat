@@ -23,6 +23,8 @@ app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS',
+                                 'localhost 127.0.0.1').split(' ')
 SELECT_USER_BY_ID_SQL = 'SELECT * FROM users WHERE id=%s;'
 SELECT_USER_SQL = 'SELECT id, password_hash, salt FROM users WHERE email=%s;'
 INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
@@ -89,7 +91,8 @@ def login():
                                  error=error)
 
 
-@cross_origin(allow_headers=['Content-Type'], methods=['POST'])
+@cross_origin(origins=ALLOWED_ORIGINS,
+              allow_headers=['Content-Type'], methods=['POST'])
 @app.route("/sponsor", methods=['POST'])
 def sponsor():
     body = flask.request.get_json()
@@ -122,7 +125,8 @@ def sponsor():
     return response
 
 
-@cross_origin(allow_headers=['Content-Type'], methods=['POST'])
+@cross_origin(origins=ALLOWED_ORIGINS,
+              allow_headers=['Content-Type'], methods=['POST'])
 @app.route("/sponsored", methods=['POST'])
 def get_sponsored():
     body = flask.request.get_json()
