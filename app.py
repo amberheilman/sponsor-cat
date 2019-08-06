@@ -9,6 +9,7 @@ from flask_cors import CORS, cross_origin
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
 from wtforms import Form, StringField, PasswordField, validators
 import uuid
 import waitress
@@ -52,7 +53,7 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
 SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
-
+SELECT_RECEIPIENTS = 'SELECT * FROM recipients WHERE email_subscription="on"'
 
 @app.route("/index", methods=['GET'])
 @login_required
@@ -136,6 +137,23 @@ def sponsor():
         app.conn.rollback()
         app.logger.exception('Encountered error while inserting sponsor')
         pass
+
+    try:
+        with app.conn.cursor() as cur:
+            cur.execute(SELECT_RECEIPIENTS)
+            recipients = cur.fetchall()
+            cur.close()
+        app.conn.commit()
+    except psycopg2.Error:
+        app.conn.rollback()
+        app.logger.exception('Encountered db error while inserting sponsor')
+        pass
+    except Exception:
+        app.conn.rollback()
+        app.logger.exception('Encountered error while inserting sponsor')
+        pass
+
+    send_simple_message(recipients, cat_name=body['cat_name'], **body)
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
@@ -162,6 +180,47 @@ def get_sponsored():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
     return flask.jsonify(data)
+
+
+@app.route('/sponsor-emails', methods=['GET', 'POST'])
+@login_required
+def sponsor_emails():
+    if flask.request.method == 'GET':
+        try:
+            with app.conn.cursor() as cur:
+                cur.execute(SELECT_RECEIPIENTS)
+                recipients = cur.fetchall()
+                cur.close()
+            app.conn.commit()
+        except psycopg2.Error:
+            app.conn.rollback()
+            app.logger.exception('Encountered db error while inserting sponsor')
+            pass
+        except Exception:
+            app.conn.rollback()
+            app.logger.exception('Encountered error while inserting sponsor')
+            pass
+        return flask.render_template('sponsor-emails.html',
+                                     recipients=recipients)
+    elif flask.request.method == 'POST':
+        pass
+
+
+def send_simple_message(recipients, cat_name, **kwargs):
+    try:
+        response = requests.post(
+            'https://api.mailgun.net/v3/sandbox17b468264b55449886dc'
+            'a2ef5e962fbc.mailgun.org/messages',
+            auth=('api', os.environ['MAILGUN_API_KEY']),
+            data={'from': 'Sponsor Cat <mailgun@sandbox17b468264b55449886d'
+                          'ca2ef5e962fbc.mailgun.org>',
+                  'to': recipients,
+                  'subject': f'{cat_name} sponsorship',
+                  'text': f"sponsor amount: {kwargs['sponsor_amount']}"
+                  f"cat link: {kwargs['cat_self_link']}"})
+        app.logger.info('Mailgun response: %s', response.json())
+    except Exception as e:
+        app.logger.warning('Failed to make mailgun request: %s', e)
 
 
 @app.route("/logout")

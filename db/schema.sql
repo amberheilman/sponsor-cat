@@ -19,3 +19,9 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
     modified_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc')
 );
+
+CREATE TABLE IF NOT EXISTS recipients (
+    id UUID PRIMARY KEY NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    email_subscription TEXT DEFAULT 'off'
+);
