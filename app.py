@@ -111,8 +111,7 @@ def login():
 
 
 @app.route("/sponsor", methods=['POST'])
-@cross_origin(origins=TRUSTED_ORIGINS,
-              allow_headers=['Content-Type'], methods=['POST'])
+@cross_origin(origins=TRUSTED_ORIGINS, allow_headers=['Content-Type'])
 def sponsor():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
@@ -142,7 +141,6 @@ def sponsor():
 
     # send_simple_message(', cat_name=body['cat_name'], **body)
     response = flask.Response('ok')
-    response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
 
