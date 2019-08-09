@@ -142,9 +142,9 @@ def sponsor():
             app.conn.rollback()
             app.logger.exception('Encountered error while inserting sponsor')
             pass
-
-    recipients = [row[1] for row in execute_sql(
-        {'sql': SELECT_RECIPIENTS, 'fetchall': True})]
+    
+        recipients = [row[1] for row in execute_sql(
+            {'sql': SELECT_RECIPIENTS, 'fetchall': True})]
 
     send_simple_message(recipients, cat_name=body['cat_name'], **body)
     response = flask.Response()
