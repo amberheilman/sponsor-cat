@@ -53,6 +53,12 @@ thead {
     text-align: center;
     padding: 30px;
 }
-.recipient-form {
+.recipient-form .form-group{
+    padding: 5% 0px 5% 0px;
+}
+.recipient-form p {
+    color: grey;
+}
+.inner-container {
     padding-top: 10%;
 }

@@ -58,15 +58,16 @@
       </div>
     </nav>
   <div class="container">
-    <form class="recipient-form" action="" method="POST">
-        {% if fail_msg %}<div class="fail-msg">{{ fail_msg }}</div>{% endif %}
-      <div class="form-group">
-        <label for="exampleFormControlTextarea1">Recipients</label>
-          <h9>Insert new recipients in comma separated format: email@example.com,email1@example.com</h9>
-        <textarea class="form-control" id="recipients" name="recipients">{{ ','.join(recipients) }}</textarea>
+      <div class="inner-container"><h1>Email Recipients</h1>
+        <form class="recipient-form" action="" method="POST">
+            {% if fail_msg %}<div class="fail-msg">{{ fail_msg }}</div>{% endif %}
+          <div class="form-group">
+              <p><h9>Insert new recipients in comma separated format: <b>email@example.com,email1@example.com</b></h9></p>
+            <textarea class="form-control" id="recipients" name="recipients">{{ ','.join(recipients) }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-light">Update</button>
+        </form>
       </div>
-      <button type="submit" class="btn btn-light">Update</button>
-    </form>
   </div>
 </body>
 </html>
