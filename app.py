@@ -116,31 +116,32 @@ def login():
 
 @app.route("/sponsor", methods=['POST', 'OPTIONS'])
 def sponsor():
-    body = flask.request.get_json()
-    app.logger.debug('Received body %r', body)
-    try:
-        with app.conn.cursor() as cur:
-            cur.execute(INSERT_SPONSORSHIP,
-                        (str(uuid.uuid4()),
-                         body['create_time'],
-                         body['sponsor_amount'],
-                         body['given_name'],
-                         body['email'],
-                         body['paypal_order_id'],
-                         body['cat_self_link'],
-                         body['cat_img'],
-                         body['cat_name'],
-                         body['petfinder_id']))
-            cur.close()
-        app.conn.commit()
-    except psycopg2.Error:
-        app.conn.rollback()
-        app.logger.exception('Encountered db error while inserting sponsor')
-        pass
-    except Exception:
-        app.conn.rollback()
-        app.logger.exception('Encountered error while inserting sponsor')
-        pass
+    if flask.request.method == 'POST':
+        body = flask.request.get_json()
+        app.logger.debug('Received body %r', body)
+        try:
+            with app.conn.cursor() as cur:
+                cur.execute(INSERT_SPONSORSHIP,
+                            (str(uuid.uuid4()),
+                             body['create_time'],
+                             body['sponsor_amount'],
+                             body['given_name'],
+                             body['email'],
+                             body['paypal_order_id'],
+                             body['cat_self_link'],
+                             body['cat_img'],
+                             body['cat_name'],
+                             body['petfinder_id']))
+                cur.close()
+            app.conn.commit()
+        except psycopg2.Error:
+            app.conn.rollback()
+            app.logger.exception('Encountered db error while inserting sponsor')
+            pass
+        except Exception:
+            app.conn.rollback()
+            app.logger.exception('Encountered error while inserting sponsor')
+            pass
 
     # send_simple_message(', cat_name=body['cat_name'], **body)
     response = flask.Response()
