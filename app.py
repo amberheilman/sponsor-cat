@@ -143,7 +143,10 @@ def sponsor():
             app.logger.exception('Encountered error while inserting sponsor')
             pass
 
-    # send_simple_message(', cat_name=body['cat_name'], **body)
+    recipients = [row[1] for row in execute_sql(
+        {'sql': SELECT_RECIPIENTS, 'fetchall': True})]
+
+    send_simple_message(recipients, cat_name=body['cat_name'], **body)
     response = flask.Response()
     response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
     response.headers['Access-Control-Allow-Headers'] = 'content-type'
