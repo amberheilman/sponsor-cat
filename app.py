@@ -5,7 +5,7 @@ import urllib
 
 import flask
 from flask import Flask
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -36,7 +36,7 @@ app.config.from_mapping({
 })
 
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
-CORS(app, resources={r"/sponsor": {"origins": TRUSTED_ORIGINS}})
+CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS}})
 app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
@@ -113,8 +113,7 @@ def login():
                                  error=error)
 
 
-@app.route("/sponsor", methods=['POST'])
-@cross_origin(origins=TRUSTED_ORIGINS, allow_headers=['Content-Type'])
+@app.route("/sponsor", methods=['POST', 'OPTIONS'])
 def sponsor():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
@@ -143,7 +142,8 @@ def sponsor():
         pass
 
     # send_simple_message(', cat_name=body['cat_name'], **body)
-    response = flask.Response('ok')
+    response = flask.Response()
+    response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
     return response
 
 
