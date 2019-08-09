@@ -145,7 +145,7 @@ def sponsor():
 
         recipients = [row[1] for row in execute_sql(
             {'sql': SELECT_RECIPIENTS, 'fetchall': True})]
-        send_simple_message(recipients, cat_name=body['cat_name'], **body)
+        send_simple_message(recipients, **body)
 
     response = flask.Response()
     response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
