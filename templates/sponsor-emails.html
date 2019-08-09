@@ -58,11 +58,13 @@
       </div>
     </nav>
   <div class="container">
-    <form class="recipient-form">
+    <form class="recipient-form" action="" method="POST">
+        {% if fail_msg %}<div class="fail-msg">{{ fail_msg }}</div>{% endif %}
       <div class="form-group">
         <label for="exampleFormControlTextarea1">Recipients</label>
-        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3">{{ ','.join(recipients) }}</textarea>
+        <textarea class="form-control" id="recipients" name="recipients">{{ ','.join(recipients) }}</textarea>
       </div>
+      <button type="submit" class="btn btn-light">Update</button>
     </form>
   </div>
 </body>

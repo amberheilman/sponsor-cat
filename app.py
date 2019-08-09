@@ -55,6 +55,9 @@ SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
 SELECT_RECIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
+INSERT_RECIPIENTS = ('INSERT INTO recipients (id, email, email_subscription)'
+                     '     VALUES {} RETURNING *')
+DROP_RECIPIENTS = 'TRUNCATE TABLE recipients'
 
 
 @app.route("/index", methods=['GET'])
@@ -189,7 +192,49 @@ def sponsor_emails():
         return flask.render_template('sponsor-emails.html',
                                      recipients=recipients)
     elif flask.request.method == 'POST':
+        form = RecipientForm(formdata=flask.request.form)
+        recipients = email_validator(form.recipients)
+        fail_msg = None
+        if recipients:
+            value_stub = '(%s, %s, %s), ' * len(recipients)
+            sql = INSERT_RECIPIENTS.format(value_stub.rstrip(', '))
+            r = []
+            for recipient in recipients:
+                r.extend((str(uuid.uuid4()), recipient, 'on'))
+            result = execute_sql({'sql': DROP_RECIPIENTS},
+                                 {'sql': sql, 'values': r, 'fetchall': True})
+            recipients = [row[1] for row in result]
+        return flask.render_template('sponsor-emails.html',
+                                     recipients=recipients,
+                                     fail_msg=fail_msg)
+
+
+def execute_sql(*sql_dict):
+    result = None
+    try:
+        with app.conn.cursor() as cur:
+            for sql in sql_dict:
+                if sql.get('values'):
+                    cur.execute(sql['sql'], sql['values'])
+                else:
+                    cur.execute(sql['sql'])
+                if sql.get('fetchall') is True:
+                    result = cur.fetchall()
+                elif sql.get('fetchone') is True:
+                    result = cur.fetchone()
+                else:
+                    pass
+            cur.close()
+        app.conn.commit()
+    except psycopg2.Error as e:
+        app.conn.rollback()
+        app.logger.exception('Encountered db error while inserting sponsor')
         pass
+    except Exception as e:
+        app.conn.rollback()
+        app.logger.exception('Encountered error while inserting sponsor')
+        pass
+    return result
 
 
 def send_simple_message(recipients, cat_name, **kwargs):
@@ -260,6 +305,14 @@ class User:
 class LoginForm(Form):
     email = StringField('Email Address', [validators.Length(min=6, max=35)])
     password = PasswordField('Password', [validators.DataRequired()])
+
+
+def email_validator(recipients):
+    return [email.strip() for email in recipients.data.split(',')]
+
+
+class RecipientForm(Form):
+    recipients = StringField('Recipients', [])
 
 
 def is_safe_url(target):
