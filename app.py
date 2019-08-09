@@ -36,7 +36,8 @@ app.config.from_mapping({
 })
 
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
-CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS}})
+CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS,
+                                    "allowed_headers": ["content-type"]}})
 app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
@@ -144,6 +145,7 @@ def sponsor():
     # send_simple_message(', cat_name=body['cat_name'], **body)
     response = flask.Response()
     response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
+    response.headers['Access-Control-Allow-Headers'] = 'content-type'
     return response
 
 
