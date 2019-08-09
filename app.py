@@ -34,14 +34,15 @@ app.config.from_mapping({
     "DEBUG": False,
     "PREFERRED_URL_SCHEME": "https"
 })
-CORS(app)
+
+TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
+CORS(app, resources={r"/sponsor": {"origins": TRUSTED_ORIGINS}})
 app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS',
-                                 'localhost 127.0.0.1').split(' ')
+
 SELECT_USER_BY_ID_SQL = 'SELECT * FROM users WHERE id=%s;'
 SELECT_USER_SQL = 'SELECT id, password_hash, salt FROM users WHERE email=%s;'
 INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
@@ -110,7 +111,7 @@ def login():
 
 
 @app.route("/sponsor", methods=['POST'])
-@cross_origin(origins=ALLOWED_ORIGINS,
+@cross_origin(origins=TRUSTED_ORIGINS,
               allow_headers=['Content-Type'], methods=['POST'])
 def sponsor():
     body = flask.request.get_json()
@@ -139,7 +140,7 @@ def sponsor():
         app.logger.exception('Encountered error while inserting sponsor')
         pass
 
-    send_simple_message(recipients, cat_name=body['cat_name'], **body)
+    # send_simple_message(', cat_name=body['cat_name'], **body)
     response = flask.Response('ok')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
