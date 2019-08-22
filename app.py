@@ -1,18 +1,28 @@
+import base64
+from email.mime.text import MIMEText
 import hashlib
+import json
 from logging.config import dictConfig
 import os
 import urllib
 
+from apiclient import errors
+from apiclient import discovery
+from cryptography.fernet import Fernet
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from httplib2 import Http
+import oauth2client
 import flask
 from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import requests
 from wtforms import Form, StringField, PasswordField, validators
 import uuid
 import waitress
+
 
 app = Flask(__name__)
 dictConfig({
@@ -35,11 +45,12 @@ app.config.from_mapping({
     "PREFERRED_URL_SCHEME": "https"
 })
 
+CREDENTIALS_SECRET = os.environ.get('CREDENTIALS_SECRET', 'secret')
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
 CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS,
                                     "allowed_headers": ["content-type"]}})
-app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
-app.secret_key = os.environ['SECRET_KEY']
+# app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
+# app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -59,6 +70,7 @@ SELECT_RECIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
 INSERT_RECIPIENTS = ('INSERT INTO recipients (id, email, email_subscription)'
                      '     VALUES {} RETURNING *')
 DROP_RECIPIENTS = 'TRUNCATE TABLE recipients'
+SELECT_CREDENTIALS = 'SELECT credentials FROM credentials WHERE name = %s'
 
 
 @app.route("/index", methods=['GET'])
@@ -143,9 +155,10 @@ def sponsor():
             app.logger.exception('Encountered error while inserting sponsor')
             pass
 
+        send_email(body['email'], **body)
         recipients = [row[1] for row in execute_sql(
             {'sql': SELECT_RECIPIENTS, 'fetchall': True})]
-        send_simple_message(recipients, **body)
+        send_email(recipients, **body)
 
     response = flask.Response()
     response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
@@ -232,32 +245,45 @@ def execute_sql(*sql_dict):
                     pass
             cur.close()
         app.conn.commit()
-    except psycopg2.Error as e:
+    except psycopg2.Error:
         app.conn.rollback()
         app.logger.exception('Encountered db error while inserting sponsor')
         pass
-    except Exception as e:
+    except Exception:
         app.conn.rollback()
         app.logger.exception('Encountered error while inserting sponsor')
         pass
     return result
 
 
-def send_simple_message(recipients, cat_name, **kwargs):
+def get_credentials():
+    tokens = execute_sql({'sql': SELECT_CREDENTIALS,
+                          'values': ['gmail_tokens']})
+    f = Fernet(CREDENTIALS_SECRET)
+    decrypted_tokens = f.decrypt(tokens[0])
+    return oauth2client.client.Credentials.new_from_json(decrypted_tokens)
+
+
+def send_email(recipients, template_name, subject, **kwargs):
+    credentials = get_credentials('gmail_tokens')
+    if not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+        else:
+            raise Exception('Do not have valid credentials for gmail!')
+    service = discovery.build('gmail', 'v1', credentials=credentials)
+    with open(f'templates/{template_name}.html', 'r') as f:
+        email = flask.render_template(f.read(), **kwargs)
+    message = MIMEText(email, 'html')
+    message['to'] = recipients
+    message['from'] = 'Sponsor Cat <straycatblues.sponsorcat@gmail.com>'
+    message['subject'] = subject
+    body = {'raw': base64.urlsafe_b64encode(
+        message.as_bytes()).decode('utf-8')}
     try:
-        response = requests.post(
-            'https://api.mailgun.net/v3/sandbox17b468264b55449886dc'
-            'a2ef5e962fbc.mailgun.org/messages',
-            auth=('api', os.environ['MAILGUN_API_KEY']),
-            data={'from': 'Sponsor Cat <mailgun@sandbox17b468264b55449886d'
-                          'ca2ef5e962fbc.mailgun.org>',
-                  'to': recipients,
-                  'subject': f'{cat_name} sponsorship',
-                  'text': f"sponsor amount: {kwargs['sponsor_amount']}"
-                  f"cat link: {kwargs['cat_self_link']}"})
-        app.logger.info('Mailgun response: %s', response.json())
+        service.users().messages().send(userId='me', body=body).execute()
     except Exception as e:
-        app.logger.warning('Failed to make mailgun request: %s', e)
+        app.logger.warning('Failed to make gmail request: %s', e)
 
 
 @app.route("/logout")

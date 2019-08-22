@@ -1,7 +1,11 @@
+cryptography
 flask
 flask-cors
 flask-login
 Flask-WTF
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 psycopg2
 requests
 waitress
