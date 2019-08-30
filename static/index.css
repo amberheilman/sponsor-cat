@@ -7,7 +7,7 @@ body {
 .navbar {
     background-color: #52bad1;
     color: white;
-    height: 60px;
+    min-height: 60px;
     width: 100%;
 }
 tbody tr:hover {
