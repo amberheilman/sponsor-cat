@@ -32,5 +32,5 @@ CREATE TABLE IF NOT EXISTS recipients
 CREATE TABLE IF NOT EXISTS credentials
 (
     name        TEXT UNIQUE NOT NULL,
-    credentials JSON        NOT NULL
+    credentials TEXT        NOT NULL
 );
