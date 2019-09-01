@@ -219,9 +219,8 @@ def get_credentials(token_name):
     tokens = execute_sql({'sql': SELECT_CREDENTIALS,
                           'values': [token_name],
                           'fetchone': True})
-    # f = Fernet(CREDENTIALS_SECRET)
-    # decrypted_tokens = base64.b64decode(f.decrypt(tokens[0].encode('utf-8')))
-    decrypted_tokens = tokens[0]
+    f = Fernet(CREDENTIALS_SECRET)
+    decrypted_tokens = json.loads(f.decrypt(tokens[0].encode('utf-8')))
     oauth2 = json.loads(decrypted_tokens)
     return oauth2client.client.OAuth2Credentials(
         oauth2['access_token'],
@@ -240,9 +239,8 @@ def get_credentials(token_name):
 
 
 def store_credentials(user_id, credentials):
-    # f = Fernet(CREDENTIALS_SECRET)
-    # creds = f.encrypt(base64.b64encode(credentials.to_json().encode('utf-8')))
-    creds = credentials.to_json()
+    f = Fernet(CREDENTIALS_SECRET)
+    creds = f.encrypt(credentials.to_json().encode('utf-8')).decode('utf-8')
     try:
         execute_sql({'sql': INSERT_CREDENTIALS, 'values': [user_id, creds]},
                     raise_error=psycopg2.errors.UniqueViolation)
