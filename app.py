@@ -254,7 +254,6 @@ def store_credentials(user_id, credentials):
 
 def send_email(recipients, template_name, subject, **kwargs):
     credentials = get_credentials('gmail_tokens')
-
     if credentials.invalid:
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
@@ -262,8 +261,7 @@ def send_email(recipients, template_name, subject, **kwargs):
             raise Exception('Do not have valid credentials for gmail!')
     service = discovery.build('gmail', 'v1', credentials=credentials)
     with open(f'templates/{template_name}.html', 'r') as f:
-        # email = flask.render_template(f.read(), **kwargs)
-        email = f.read()
+        email = f.read().format(**kwargs)
     message = MIMEText(email, 'html')
     message['to'] = recipients
     message['from'] = 'Sponsor Cat <straycatblues.sponsorcat@gmail.com>'
