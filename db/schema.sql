@@ -32,5 +32,7 @@ CREATE TABLE IF NOT EXISTS recipients
 CREATE TABLE IF NOT EXISTS credentials
 (
     name        TEXT UNIQUE NOT NULL,
-    credentials TEXT        NOT NULL
+    credentials TEXT        NOT NULL,
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
+    modified_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc')
 );
