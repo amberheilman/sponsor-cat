@@ -232,8 +232,7 @@ def get_credentials(token_name):
                           'values': [token_name],
                           'fetchone': True})
     f = Fernet(CREDENTIALS_SECRET)
-    decrypted_tokens = json.loads(f.decrypt(tokens[0].encode('utf-8')))
-    oauth2 = json.loads(decrypted_tokens)
+    oauth2 = json.loads(f.decrypt(tokens[0].encode('utf-8')))
     return oauth2client.client.OAuth2Credentials(
         oauth2['access_token'],
         oauth2['client_id'],
