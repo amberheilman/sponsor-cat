@@ -135,8 +135,9 @@ def sponsor():
                                 body['petfinder_id'])})
         send_email(body['email'], 'thank-you-email',
                    f"Thank you for sponsoring {body['cat_name']}", **body)
-        recipients = ' '.join([row[1] for row in execute_sql(
+        recipients = ', '.join([row[1] for row in execute_sql(
             {'sql': SELECT_RECIPIENTS, 'fetchall': True})])
+        logger.info('Informing recipients of sponsorship: %r', recipients)
         send_email(recipients, 'recipient-email',
                    f"{body['cat_name']} is sponsored!", **body)
 
