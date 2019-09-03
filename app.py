@@ -215,6 +215,17 @@ def execute_sql(*sql_dict, raise_error=None, cursor_factory=None):
     return result
 
 
+def create_secrets_file(token_name):
+    f = Fernet(CREDENTIALS_SECRET)
+    tokens = execute_sql({'sql': SELECT_CREDENTIALS,
+                          'values': [token_name],
+                          'fetchone': True})
+    if tokens:
+        with open('credentials.json', 'w+') as creds_file:
+            decrypted_tokens = json.loads(f.decrypt(tokens[0].encode('utf-8')))
+            json.dump(decrypted_tokens, creds_file)
+
+
 def get_credentials(token_name):
     tokens = execute_sql({'sql': SELECT_CREDENTIALS,
                           'values': [token_name],
@@ -418,4 +429,5 @@ def is_safe_url(target):
 
 
 if __name__ == "__main__":
+    create_secrets_file('gmail_secrets')
     waitress.serve(app, port=os.environ.get('PORT', 5000))
