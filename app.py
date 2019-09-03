@@ -70,7 +70,8 @@ INSERT_RECIPIENTS = ('INSERT INTO recipients (id, email, email_subscription)'
                      '     VALUES {} RETURNING *')
 DROP_RECIPIENTS = 'TRUNCATE TABLE recipients'
 SELECT_CREDENTIALS = 'SELECT credentials FROM credentials WHERE name = %s'
-INSERT_CREDENTIALS = ('INSERT INTO credentials (name, credentials, updated_at)'
+INSERT_CREDENTIALS = ('INSERT INTO credentials'
+                      '            (name, credentials, modified_at)'
                       '     VALUES (%s, %s, now())')
 UPDATE_CREDENTIALS = 'UPDATE credentials SET credentials=%s WHERE name=%s'
 
