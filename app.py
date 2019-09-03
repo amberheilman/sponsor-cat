@@ -270,7 +270,8 @@ def send_email(recipients, template_name, subject, **kwargs):
             credentials.refresh(Request())
         else:
             raise Exception('Do not have valid credentials for gmail!')
-    service = discovery.build('gmail', 'v1', credentials=credentials)
+    service = discovery.build('gmail', 'v1', credentials=credentials,
+                              cache_discovery=False)
     with open(f'templates/{template_name}.html', 'r') as f:
         email = f.read().format(**kwargs)
     message = MIMEText(email, 'html')
