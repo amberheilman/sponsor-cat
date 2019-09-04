@@ -9,4 +9,5 @@ google-auth-oauthlib
 oauth2client
 psycopg2
 requests
+sentry-sdk[flask]==0.11.2
 waitress

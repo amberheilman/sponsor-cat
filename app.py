@@ -18,11 +18,19 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 from wtforms import Form, StringField, PasswordField, validators
 import uuid
 import waitress
 
 
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=,
+        integrations=[FlaskIntegration()]
+    )
 app = Flask(__name__)
 dictConfig({
     'version': 1,
