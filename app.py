@@ -28,7 +28,7 @@ import waitress
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
     sentry_sdk.init(
-        dsn=,
+        dsn=SENTRY_DSN,
         integrations=[FlaskIntegration()]
     )
 app = Flask(__name__)
