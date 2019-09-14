@@ -52,6 +52,8 @@ app.config.from_mapping({
     "PREFERRED_URL_SCHEME": "https"
 })
 SCHEME = os.environ.get('SCHEME', 'http')
+BASE_SPONSOR_JOURNEY_URL = os.environ.get('BASE_SPONSOR_JOURNEY_URL',
+                                          'http://localhost:9999')
 CREDENTIALS_SECRET = os.environ.get('CREDENTIALS_SECRET', 'secret')
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
 CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS,
@@ -130,8 +132,9 @@ def sponsor():
     if flask.request.method == 'POST':
         body = flask.request.get_json()
         app.logger.debug('Received body %r', body)
+        sponsor_id = str(uuid.uuid4())
         execute_sql({'sql': INSERT_SPONSORSHIP,
-                     'values': (str(uuid.uuid4()),
+                     'values': (sponsor_id,
                                 body['create_time'],
                                 body['sponsor_amount'],
                                 body['given_name'],
@@ -141,13 +144,17 @@ def sponsor():
                                 body['cat_img'],
                                 body['cat_name'],
                                 body['petfinder_id'])})
-        send_email(body['email'], 'thank-you-email',
-                   f"Thank you for sponsoring {body['cat_name']}", **body)
+        send_email(body['email'],
+                   'thank-you-email',
+                   f"Thank you for sponsoring {body['cat_name']}",
+                   signup_url=f'{BASE_SPONSOR_JOURNEY_URL}/{sponsor_id}',
+                   **body)
         recipients = ', '.join([row[1] for row in execute_sql(
             {'sql': SELECT_RECIPIENTS, 'fetchall': True})])
         app.logger.info('Informing recipients of sponsorship: %r', recipients)
         send_email(recipients, 'recipient-email',
-                   f"{body['cat_name']} is sponsored!", **body)
+                   f"{body['cat_name']} is sponsored!",
+                   **body)
 
     response = flask.Response()
     response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
