@@ -72,7 +72,7 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                       '            cat_self_link, cat_img, cat_name,'
                       '            petfinder_id)'
                       '     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)')
-SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships'
+SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships ORDER BY sponsored_at DESC'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
 SELECT_RECIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
