@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.1
+-----
+- Fix payment type validation
+
 1.1.0
 -----
 - Add manual sponsorship creation for cash and check options

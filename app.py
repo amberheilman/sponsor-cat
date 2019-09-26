@@ -573,7 +573,7 @@ class SponsorForm(Form):
                                   validators.AnyOf('95.00', '105.00')])
     payment_type = StringField('Payment Type',
                                [validators.DataRequired(),
-                                validators.AnyOf('cash', 'check')])
+                                validators.AnyOf(('cash', 'check'))])
 
 
 class LoginForm(Form):
