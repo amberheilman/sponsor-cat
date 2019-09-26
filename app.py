@@ -4,9 +4,11 @@ import hashlib
 import json
 from logging.config import dictConfig
 import os
+import socket
 import urllib
 
 from apiclient import discovery
+import arrow
 from cryptography.fernet import Fernet
 from oauth2client.client import flow_from_clientsecrets
 from google.auth.transport.requests import Request
@@ -18,11 +20,13 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from wtforms import Form, StringField, PasswordField, validators
 import uuid
 import waitress
+import yarl
 
 
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
@@ -52,8 +56,13 @@ app.config.from_mapping({
     "PREFERRED_URL_SCHEME": "https"
 })
 SCHEME = os.environ.get('SCHEME', 'https')
+BASE_PETFINDER_URL = yarl.URL(
+    'https://api.petfinder.com/v2/animals').with_query(
+    {'organization': 'PA16', 'status': 'adoptable'})
 BASE_SPONSOR_JOURNEY_URL = os.environ.get('BASE_SPONSOR_JOURNEY_URL',
                                           'http://localhost:9999')
+PETFINDER_CLIENT_ID = os.environ['PETFINDER_CLIENT_ID']
+PETFINDER_CLIENT_SECRET = os.environ['PETFINDER_CLIENT_SECRET']
 CREDENTIALS_SECRET = os.environ.get('CREDENTIALS_SECRET', 'secret')
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
 CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS,
@@ -72,6 +81,13 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                       '            cat_self_link, cat_img, cat_name,'
                       '            petfinder_id)'
                       '     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)')
+INSERT_MANUAL_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
+                             '            sponsor_amount, payment_type,'
+                             '            name, email, cat_self_link, '
+                             '            cat_img, cat_name,'
+                             '            petfinder_id)'
+                             '     VALUES (%s, %s, %s, %s, %s, %s, %s,'
+                             '             %s, %s, %s)')
 SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships ORDER BY sponsored_at DESC'
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
@@ -125,6 +141,126 @@ def login():
                                  scheme=scheme,
                                  _next='/',
                                  error=error)
+
+
+def make_petfinder_request(url):
+    try:
+        token_response = requests.post(
+            'https://api.petfinder.com/v2/oauth2/token',
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            data={'grant_type': 'client_credentials',
+                  'client_id': PETFINDER_CLIENT_ID,
+                  'client_secret': PETFINDER_CLIENT_SECRET},
+            timeout=(3.05, 3))
+    except (OSError, socket.error, requests.exceptions.RequestException) as e:
+        app.logger.warning('Error making request to url:%r error:%r', url, e)
+        return
+
+    if token_response.status_code != 200:
+        app.logger.warning('Error retrieving new token: %r',
+                           token_response.content)
+        return
+    else:
+        token = token_response.json()['access_token']
+        app.logger.info('Getting url %s', url)
+        response = requests.get(url,
+                                headers={'Authorization': f'Bearer {token}'},
+                                timeout=(3.05, 3))
+        if response.status_code != 200:
+            app.logger.warning('Error making request to url:%r error:%r',
+                               url,
+                               token_response.content)
+            return
+    return response.json()
+
+
+@app.route("/cat/search", methods=['GET'])
+@login_required
+def search():
+    name = flask.request.args.get('name', '')
+    if not name:
+        return flask.render_template_string('<p>No Results</p>')
+    url = yarl.URL(BASE_PETFINDER_URL).update_query({'name': name})
+    app.logger.debug('Finding cats by name: %r', name)
+    cats = make_petfinder_request(str(url))
+    if not cats.get('animals'):
+        return flask.render_template_string('<p>No Results</p>')
+
+    app.logger.debug('Retrieved cat names: %r',
+                     [cat['name'] for cat in cats['animals']])
+    return flask.render_template_string(
+        """
+          {% for cat in cats %}
+            <div class="card img-item" style="width: 18rem;">
+              <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
+              <div class="card-body">
+                <h5 class="card-title">{{ cat['name'] }}</h5>
+                <p class="card-text">{{ cat['description'] }}</p>
+                <input type="hidden" name="cat_img" value="{{ cat['photos'][0]['medium'] }}">
+                <input type="hidden" name="cat_self_link" value="{{ cat['url'] }}">
+                <input type="hidden" name="petfinder_id" value="{{ cat['id'] }}">
+                <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}')">Select</div>
+              </div>
+            </div>
+          {% endfor %}
+        """, cats=cats['animals'])
+
+
+@app.route("/sponsor", methods=['GET'])
+@login_required
+def get_sponsor_form():
+    cats = make_petfinder_request(BASE_PETFINDER_URL)
+    return flask.render_template('new-sponsor.html', cats=cats['animals'],
+                                 scheme=SCHEME)
+
+
+@app.route("/admin/sponsor", methods=['GET', 'POST'])
+@login_required
+def manual_sponsor():
+    error = None
+    if flask.request.method == 'POST':
+        form = SponsorForm(formdata=flask.request.form)
+        app.logger.debug('form fields: %r', flask.request.form)
+        valid = form.validate()
+        if valid:
+            body = flask.request.form
+            sponsor_id = str(uuid.uuid4())
+            execute_sql({'sql': INSERT_MANUAL_SPONSORSHIP,
+                         'values': (sponsor_id,
+                                    body.get('create_time',
+                                             arrow.utcnow().isoformat()),
+                                    body['sponsor_amount'],
+                                    body['payment_type'],
+                                    body['given_name'],
+                                    body['email'],
+                                    body['cat_self_link'],
+                                    body['cat_img'],
+                                    body['cat_name'],
+                                    body['petfinder_id'])})
+            notify_of_sponsorship(sponsor_id, **body)
+            return flask.redirect(flask.url_for('index', _scheme=SCHEME,
+                                                _external=True))
+        else:
+            error = 'Invalid submission'
+            app.logger.info('manual sponsorship failed')
+    cats = make_petfinder_request(BASE_PETFINDER_URL)
+    return flask.render_template('new-sponsor.html', cats=cats['animals'],
+                                 scheme=SCHEME,
+                                 error=error)
+
+
+def notify_of_sponsorship(sponsor_id, **body):
+    send_email(body['email'],
+               'thank-you-email',
+               f"Thank you for sponsoring {body['cat_name']}",
+               signup_url=f'{BASE_SPONSOR_JOURNEY_URL}/{sponsor_id}',
+               **body)
+    recipients = ', '.join([row[1] for row in execute_sql(
+        {'sql': SELECT_RECIPIENTS, 'fetchall': True})])
+    app.logger.info('Informing recipients of sponsorship: %r', recipients)
+    send_email(recipients, 'recipient-email',
+               f"{body['cat_name']} is sponsored!",
+               **body)
 
 
 @app.route("/sponsor", methods=['POST', 'OPTIONS'])
@@ -422,6 +558,22 @@ class User:
             if pw_hash == data[1]:
                 return data[0]
         return str(uuid.uuid4())
+
+
+class SponsorForm(Form):
+    cat_img = StringField('Cat Image', [validators.url(),
+                                        validators.DataRequired()])
+    cat_self_link = StringField('Cat Self Link', [validators.url(),
+                                                  validators.DataRequired()])
+    petfinder_id = StringField('Petfinder ID', [validators.DataRequired()])
+    given_name = StringField('Given Name', [validators.DataRequired()])
+    email = StringField('Email Address', [validators.Length(min=6, max=35)])
+    sponsor_amount = StringField('Sponsor Amount',
+                                 [validators.DataRequired(),
+                                  validators.AnyOf('95.00', '105.00')])
+    payment_type = StringField('Payment Type',
+                               [validators.DataRequired(),
+                                validators.AnyOf('cash', 'check')])
 
 
 class LoginForm(Form):

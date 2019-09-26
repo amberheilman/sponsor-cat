@@ -6,16 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css', _external=True, _scheme=scheme) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='new-sponsor.css', _external=True, _scheme=scheme) }}">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon.ico', _external=True, _scheme=scheme) }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico', _external=True, _scheme=scheme) }}" sizes="32x32">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico', _external=True, _scheme=scheme) }}" sizes="16x16">
     <link rel="mask-icon" href="{{ url_for('static', filename='favicon.ico', _external=True, _scheme=scheme) }}" color="#5bbad5">
+    <script>
+        function search_cats() {
+            let cat_name = document.getElementById("cat-name").value;
+            let url = new URL("{{ url_for('search', _external=True, _scheme=scheme) }}");
+            url.searchParams.append('name', cat_name);
+
+            return fetch(url.toString()).then(function(response) {
+                return response.text().then(function(text) {
+                  document.getElementById("cat-results").innerHTML = text;
+                })
+            });
+        }
+        function select_cat(btn, name) {
+            {# remove selected from other divs #}
+            var childBtns = document.getElementById('cat-results').getElementsByClassName('btn');
+            for( i=0; i< childBtns.length; i++ ) {
+                childBtns[i].innerText = "Select";
+                childBtns[i].style.backgroundColor = "#e2e6ea";
+            }
+            document.getElementById('cat-name').value = name;
+            btn.innerText = "Selected";
+            btn.style.backgroundColor = "green";
+        }
+    </script>
 </head>
 <body>
   <div class="container">
-      <h1 class="heading">SponsorCat</h1>
+      <h1 class="heading">Create a sponsorship</h1>
       <div class="container-login">
           {% if error %}
             <div class="alert alert-danger" role="alert">
@@ -23,15 +47,58 @@
             </div>
           {% endif %}
         <form action="" method=post>
+
           <div class="form-group">
-            <label for="exampleInputEmail1">Email address</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Email" name="email">
+            <label for="catName">Cat's Name</label>
+              <div class="form-row">
+                <input id="cat-name" class="form-control form-elem-sm" type="text" class="form-control" id="catName" placeholder="Felix ..." name="cat_name">
+                <a href="#" class="btn btn-primary" onclick="search_cats()">Search</a>
+              </div>
           </div>
+
+          <div id="cat-results" class="cat-results">
+              {% for cat in cats %}
+                <div class="card img-item" style="width: 18rem;">
+                  <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ cat['name'] }}</h5>
+                    <p class="card-text">{{ cat['description'] }}</p>
+                    <input type="hidden" name="cat_img" value="{{ cat['photos'][0]['medium'] }}">
+                    <input type="hidden" name="cat_self_link" value="{{ cat['url'] }}">
+                    <input type="hidden" name="petfinder_id" value="{{ cat['id'] }}">
+                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}')">Select</div>
+                  </div>
+                </div>
+              {% endfor %}
+          </div>
+
           <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+            <label for="sponsorName">Sponsor's Name</label>
+            <input type="text" class="form-control" id="sponsorName" name="given_name" placeholder="name">
           </div>
-          <button type="submit" class="btn btn-light">Login</button>
+
+          <div class="form-group">
+            <label for="sponsorEmail">Sponsor's Email</label>
+            <input type="email" class="form-control" id="sponsorEmail" name="email" placeholder="email">
+          </div>
+
+          <div class="form-group">
+            <label for="sponsorAmount">Sponsor Amount</label>
+            <select class="form-control form-control-lg" id="sponsorAmount" name="sponsor_amount">
+              <option value="95.00" selected>$95.00</option>
+              <option value="105.00">$105.00</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentType">Payment Type</label>
+            <select class="form-control form-control-lg" id="paymentType" name="payment_type">
+              <option value="cash" selected>Cash</option>
+              <option value="check">Check</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-light">Create</button>
           <input type=hidden value="{{ _next or '' }}" name=next>
         </form>
       </div>

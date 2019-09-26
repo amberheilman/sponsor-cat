@@ -73,6 +73,7 @@
           <th scope="col">Sponsor Name</th>
           <th scope="col">Sponsor Email</th>
           <th scope="col">Sponsor Amount</th>
+          <th scope="col">Payment Type</th>
           <th scope="col">PayPal OrderID</th>
         </tr>
       </thead>
@@ -86,7 +87,12 @@
           <td>{{ cat['name'] }}</td>
           <td>{{ cat['email'] }}</td>
           <td>${{ cat['sponsor_amount'] }}</td>
-          <td>{{ cat['paypal_order_id'] }}</td>
+          <td>{{ cat['payment_type'].title() }}</td>
+          {% if cat['paypal_order_id'] %}
+            <td>{{ cat['paypal_order_id'] }}</td>
+          {% else %}
+            <td>-</td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>

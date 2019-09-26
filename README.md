@@ -13,5 +13,5 @@ Dependencies
 Start a postgres container, and load in the schema:
 ```
 $ docker-compose up -d
-$ psql -h localhost -p $port -f schema.sql
+$ psql -h localhost -p $port -f 000_base.sql
 ```

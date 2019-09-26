@@ -1,5 +1,4 @@
 html, body {
-    background-color: #52bad1;
     font-family: sans-serif;
     font-family: Ubuntu;
     font-size: 15px;
@@ -8,9 +7,7 @@ html, body {
 .container {
     margin-top: 45px;
     width: 30%;
-    background-color: white;
     padding: 50px;
-    box-shadow: 8px 8px 21px 5px darkslategrey;
 }
 .heading {
     text-align: center;
@@ -18,15 +15,58 @@ html, body {
 .container-login {
     padding-top: 10%;
 }
-@media all and (max-width: 1000px) {
+.cat-results {
+    border: 1px solid #80808063;
+    /*margin: 10px -159% 30px -159%;*/
+    margin-bottom: 30px;
+    height: 545px;
+    max-height: 545px;
+    display: flex;
+    flex-direction: row;
+    overflow: scroll;
+    scroll-direction: horizontal;
+    flex-wrap: nowrap;
+}
+.card {
+    margin: 10px 3px 10px 3px;
+    min-width: 300px;
+    height: 500px;
+}
+.form-elem-sm {
+    max-width: 69%;
+    width: 69%;
+}
+.card img {
+    width: 300px;
+    object-fit: cover;
+    max-height: 300px;
+    height: 300px;
+}
+.form-row {
+    width: 100%;
+    flex-direction: row;
+    margin-left: 0;
+}
+.form-row a {
+    max-width: 30%;
+    width: 30%;
+    margin-left: 1%;
+}
+@media all and (max-width: 1200px) {
     .container {
         width: 70%;
+    }
+    .cat-results {
+        margin: 10px 0 30px 0;
     }
 }
 
 @media all and (max-width: 500px) {
     .container {
         width: 100%;
+    }
+    .cat-results {
+        margin: 10px 0 30px 0;
     }
 }
 .form-control {
