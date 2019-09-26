@@ -1,3 +1,4 @@
+-- version 1.0.0 --
 CREATE TABLE IF NOT EXISTS sponsorships
 (
     id              UUID PRIMARY KEY NOT NULL,
@@ -36,3 +37,6 @@ CREATE TABLE IF NOT EXISTS credentials
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
     modified_at TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc')
 );
+
+-- version 1.2.0 --
+ALTER TABLE sponsorships ALTER COLUMN paypal_order_id DROP NOT NULL;

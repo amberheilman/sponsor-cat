@@ -51,7 +51,7 @@ app.config.from_mapping({
     "DEBUG": False,
     "PREFERRED_URL_SCHEME": "https"
 })
-SCHEME = os.environ.get('SCHEME', 'http')
+SCHEME = os.environ.get('SCHEME', 'https')
 BASE_SPONSOR_JOURNEY_URL = os.environ.get('BASE_SPONSOR_JOURNEY_URL',
                                           'http://localhost:9999')
 CREDENTIALS_SECRET = os.environ.get('CREDENTIALS_SECRET', 'secret')
