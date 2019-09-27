@@ -4,6 +4,12 @@ html, body {
     font-size: 15px;
     line-height: 20px;
 }
+.navbar {
+    background-color: #52bad1;
+    color: white;
+    min-height: 60px;
+    width: 100%;
+}
 .container {
     margin-top: 45px;
     width: 30%;
