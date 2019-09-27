@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.1.2
+-----
+- Add manual sponsorship beta to navigation
+- Add field retention on manual sponsorship submission failures
+- Default photo if none exist
+
 1.1.1
 -----
 - Fix payment type validation
