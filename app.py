@@ -192,11 +192,19 @@ def search():
         """
           {% for cat in cats %}
             <div class="card img-item" style="width: 18rem;">
-              <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
-              <div class="card-body">
+                {% if cat['photos'] %}
+                <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
+                {% else %}
+                <img class="card-img-top" src="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}" alt="{{ cat['name'] }}">
+                {% endif %}
+                <div class="card-body">
                 <h5 class="card-title">{{ cat['name'] }}</h5>
                 <p class="card-text">{{ cat['description'] }}</p>
+                {% if cat['photos'] %}
                 <input type="hidden" name="cat_img" value="{{ cat['photos'][0]['medium'] }}">
+                {% else %}
+                <input type="hidden" name="cat_img" value="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}">
+                {% endif %}
                 <input type="hidden" name="cat_self_link" value="{{ cat['url'] }}">
                 <input type="hidden" name="petfinder_id" value="{{ cat['id'] }}">
                 <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}')">Select</div>
