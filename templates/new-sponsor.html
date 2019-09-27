@@ -27,7 +27,7 @@
                 })
             });
         }
-        function select_cat(btn, name) {
+        function select_cat(btn, name, url, id, photo) {
             {# remove selected from other divs #}
             var childBtns = document.getElementById('cat-results').getElementsByClassName('btn');
             for( i=0; i< childBtns.length; i++ ) {
@@ -35,6 +35,10 @@
                 childBtns[i].style.backgroundColor = "#e2e6ea";
             }
             document.getElementById('cat-name').value = name;
+            document.getElementById('cat-self-link').value = url;
+            document.getElementById('petfinder-id').value = id;
+            document.getElementById('cat-img').value = photo;
+
             btn.innerText = "Selected";
             btn.style.backgroundColor = "green";
         }
@@ -71,9 +75,9 @@
         <form action="" method=post>
 
           <div class="form-group">
-            <label for="catName">Cat's Name</label>
+            <label for="catName">Select Cat to Sponsor</label>
               <div class="form-row">
-                <input id="cat-name" class="form-control form-elem-sm" type="text" class="form-control" id="catName" placeholder="Felix ..." name="cat_name">
+                <input id="cat-name" class="form-control form-elem-sm" type="text" class="form-control" id="catName" placeholder="Felix ..." name="cat_name" value="{{ fields.get('cat-name') or '' }}">
                 <a href="#" class="btn btn-primary" onclick="search_cats()">Search</a>
               </div>
           </div>
@@ -89,14 +93,14 @@
                     <div class="card-body">
                     <h5 class="card-title">{{ cat['name'] }}</h5>
                     <p class="card-text">{{ cat['description'] }}</p>
+                    <input type="hidden" id="cat-img" name="cat_img" value="{{ fields.get('cat_img') or '' }}">
+                    <input type="hidden" id="cat-self-link" name="cat_self_link" value="{{ fields.get('cat_self_link') or '' }}">
+                    <input type="hidden" id="petfinder-id" name="petfinder_id" value="{{ fields.get('petfinder_id') or '' }}">
                     {% if cat['photos'] %}
-                    <input type="hidden" name="cat_img" value="{{ cat['photos'][0]['medium'] }}">
+                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}', '{{ cat['url'] }}', '{{ cat['id'] }}', '{{ cat['photos'][0]['medium'] }}')">Select</div>
                     {% else %}
-                    <input type="hidden" name="cat_img" value="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}">
+                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}', '{{ cat['url'] }}', '{{ cat['id'] }}', '{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}')">Select</div>
                     {% endif %}
-                    <input type="hidden" name="cat_self_link" value="{{ cat['url'] }}">
-                    <input type="hidden" name="petfinder_id" value="{{ cat['id'] }}">
-                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}')">Select</div>
                   </div>
                 </div>
               {% endfor %}
@@ -104,27 +108,37 @@
 
           <div class="form-group">
             <label for="sponsorName">Sponsor's Name</label>
-            <input type="text" class="form-control" id="sponsorName" name="given_name" placeholder="name">
+            <input type="text" class="form-control" id="sponsorName" name="given_name" placeholder="name" value="{{ fields.get('given_name') or '' }}">
           </div>
 
           <div class="form-group">
             <label for="sponsorEmail">Sponsor's Email</label>
-            <input type="email" class="form-control" id="sponsorEmail" name="email" placeholder="email">
+            <input type="email" class="form-control" id="sponsorEmail" name="email" placeholder="email" value="{{ fields.get('email') or '' }}">
           </div>
 
           <div class="form-group">
             <label for="sponsorAmount">Sponsor Amount</label>
             <select class="form-control form-control-lg" id="sponsorAmount" name="sponsor_amount">
-              <option value="95.00" selected>$95.00</option>
-              <option value="105.00">$105.00</option>
+                {% if fields.get('sponsor_amount') == '95.00' %}
+                  <option value="95.00" selected>$95.00</option>
+                  <option value="105.00">$105.00</option>
+                {% else %}
+                  <option value="95.00">$95.00</option>
+                  <option value="105.00" selected>$105.00</option>
+                {% endif %}
             </select>
           </div>
 
           <div class="form-group">
             <label for="paymentType">Payment Type</label>
             <select class="form-control form-control-lg" id="paymentType" name="payment_type">
-              <option value="cash" selected>Cash</option>
-              <option value="check">Check</option>
+              {% if fields.get('payment_type') and fields.get('payment_type') == 'cash' %}
+                  <option value="cash" selected>Cash</option>
+                  <option value="check">Check</option>
+              {% else %}
+                  <option value="cash">Cash</option>
+                  <option value="check" selected>Check</option>
+              {% endif %}
             </select>
           </div>
 

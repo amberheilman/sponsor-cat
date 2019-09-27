@@ -190,28 +190,28 @@ def search():
                      [cat['name'] for cat in cats['animals']])
     return flask.render_template_string(
         """
-          {% for cat in cats %}
-            <div class="card img-item" style="width: 18rem;">
-                {% if cat['photos'] %}
-                <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
-                {% else %}
-                <img class="card-img-top" src="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}" alt="{{ cat['name'] }}">
-                {% endif %}
-                <div class="card-body">
-                <h5 class="card-title">{{ cat['name'] }}</h5>
-                <p class="card-text">{{ cat['description'] }}</p>
-                {% if cat['photos'] %}
-                <input type="hidden" name="cat_img" value="{{ cat['photos'][0]['medium'] }}">
-                {% else %}
-                <input type="hidden" name="cat_img" value="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}">
-                {% endif %}
-                <input type="hidden" name="cat_self_link" value="{{ cat['url'] }}">
-                <input type="hidden" name="petfinder_id" value="{{ cat['id'] }}">
-                <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}')">Select</div>
-              </div>
-            </div>
-          {% endfor %}
-        """, cats=cats['animals'])
+           {% for cat in cats %}
+                <div class="card img-item" style="width: 18rem;">
+                    {% if cat['photos'] %}
+                    <img class="card-img-top" src="{{ cat['photos'][0]['medium'] }}" alt="{{ cat['name'] }}">
+                    {% else %}
+                    <img class="card-img-top" src="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}" alt="{{ cat['name'] }}">
+                    {% endif %}
+                    <div class="card-body">
+                    <h5 class="card-title">{{ cat['name'] }}</h5>
+                    <p class="card-text">{{ cat['description'] }}</p>
+                    <input type="hidden" id="cat-img" name="cat_img" value="{{ fields.get('cat_img') or '' }}">
+                    <input type="hidden" id="cat-self-link" name="cat_self_link" value="{{ fields.get('cat_self_link') or '' }}">
+                    <input type="hidden" id="petfinder-id" name="petfinder_id" value="{{ fields.get('petfinder_id') or '' }}">
+                    {% if cat['photos'] %}
+                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}', '{{ cat['url'] }}', '{{ cat['id'] }}', '{{ cat['photos'][0]['medium'] }}')">Select</div>
+                    {% else %}
+                    <div class="btn btn-primary" onclick="select_cat(this, '{{ cat['name'] }}', '{{ cat['url'] }}', '{{ cat['id'] }}', '{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}')">Select</div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+        """, cats=cats['animals'], fields={})
 
 
 @app.route("/sponsor", methods=['GET'])
@@ -226,6 +226,7 @@ def get_sponsor_form():
 @login_required
 def manual_sponsor():
     error = None
+    fields = {}
     if flask.request.method == 'POST':
         form = SponsorForm(formdata=flask.request.form)
         app.logger.debug('form fields: %r', flask.request.form)
@@ -249,12 +250,14 @@ def manual_sponsor():
             return flask.redirect(flask.url_for('index', _scheme=SCHEME,
                                                 _external=True))
         else:
-            error = 'Invalid submission'
-            app.logger.info('manual sponsorship failed')
+            error = f'Invalid submission: {form.errors}'
+            app.logger.info('manual sponsorship failed: %r', form.errors)
+            fields = flask.request.form
     cats = make_petfinder_request(BASE_PETFINDER_URL)
     return flask.render_template('new-sponsor.html', cats=cats['animals'],
                                  scheme=SCHEME,
-                                 error=error)
+                                 error=error,
+                                 fields=fields)
 
 
 def notify_of_sponsorship(sponsor_id, **body):
