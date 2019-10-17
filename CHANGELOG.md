@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.3
+-----
+- Fix sponsor_amount field validation
+
 1.1.2
 -----
 - Add manual sponsorship beta to navigation
