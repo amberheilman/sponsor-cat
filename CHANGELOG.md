@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.4
+-----
+- Fix cors trusted origins header not being returned
+
 1.1.3
 -----
 - Fix sponsor_amount field validation

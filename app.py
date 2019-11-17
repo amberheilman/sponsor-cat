@@ -65,8 +65,8 @@ PETFINDER_CLIENT_ID = os.environ['PETFINDER_CLIENT_ID']
 PETFINDER_CLIENT_SECRET = os.environ['PETFINDER_CLIENT_SECRET']
 CREDENTIALS_SECRET = os.environ.get('CREDENTIALS_SECRET', 'secret')
 TRUSTED_ORIGINS = os.environ.get('TRUSTED_ORIGINS', 'localhost 127.0.0.1')
-CORS(app, resources={r"/sponsor/": {"origins": TRUSTED_ORIGINS,
-                                    "allowed_headers": ["content-type"]}})
+CORS(app, resources={r"/sponsor": {"origins": TRUSTED_ORIGINS,
+                                   "allowed_headers": ["content-type"]}})
 app.conn = psycopg2.connect(os.environ['DATABASE_URL'])  # TODO: reconnect logic
 app.secret_key = os.environ['SECRET_KEY']
 login_manager = LoginManager()
