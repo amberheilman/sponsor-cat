@@ -1,4 +1,6 @@
+import atexit
 import base64
+import datetime
 from email.mime.text import MIMEText
 import hashlib
 import json
@@ -8,6 +10,7 @@ import socket
 import urllib
 
 from apiclient import discovery
+from apscheduler.schedulers.background import BackgroundScheduler
 import arrow
 from cryptography.fernet import Fernet
 from oauth2client.client import flow_from_clientsecrets
@@ -20,6 +23,7 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from pytz import utc
 import requests
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -36,6 +40,12 @@ if SENTRY_DSN:
         integrations=[FlaskIntegration()]
     )
 app = Flask(__name__)
+
+scheduler = BackgroundScheduler(daemon=True,
+                                timezone=utc)
+# Shutdown your cron thread if the web process is stopped
+atexit.register(lambda: scheduler.shutdown(wait=False))
+
 dictConfig({
     'version': 1,
     'formatters': {'default': {
@@ -403,6 +413,52 @@ def sponsor_emails():
                                      fail_msg=fail_msg)
 
 
+def process_adopted():
+    app.logger.info('starting scheduled adopted-cron')
+    # get adoptable cats
+    adoptable_sql = ("          SELECT sponsorship_emails.sponsorship_id,"
+                     "                 sponsorships.petfinder_id,"
+                     "                 sponsorships.cat_name,"
+                     "                 sponsorships.cat_self_link,"
+                     "                 sponsorships.cat_img,"
+                     "                 sponsorship_emails.contact_email"
+                     "            FROM sponsorship_emails"
+                     " LEFT OUTER JOIN sponsorships"
+                     "              ON sponsorships.id=sponsorship_id"
+                     "           WHERE adoption_status != 'adopted';")
+    results = execute_sql({'sql': adoptable_sql, 'fetchall': True})
+    for result in results:
+        sponsorship_id, cat_id, cat_name, cat_url, cat_img, email = result
+
+        # check to see if the cats were adopted in the last day
+        link = BASE_PETFINDER_URL / str(cat_id)
+        cat = make_petfinder_request(link)
+        if cat['animal']['status'] == 'adopted':
+            app.logger.info('updating cat id:%s to adopted', cat_id)
+            execute_sql({'sql': "UPDATE sponsorship_emails "
+                                "   SET adoption_status='adopted',"
+                                "       modified_at=now() at time zone 'utc'"
+                                " WHERE id=%s",
+                         'values': [sponsorship_id]})
+            app.logger.info('sending email to:%s for adopted cat '
+                            'sponsor_id:%s name:%s',
+                            email,
+                            sponsorship_id,
+                            cat_name)
+            # inform contact_email of adoption
+            send_email(email,
+                       'adopted-email',
+                       f"{cat_name} is going home! 🎉🥳🙌🎊",
+                       cat_url=cat_url,
+                       cat_photo_url=cat_img,
+                       cat_name=cat_name)
+        else:
+            app.logger.info('not adopted, skipping id:%s', cat_id)
+            continue
+    app.logger.info('finished running adopted-cron')
+    scheduler.print_jobs()
+
+
 def execute_sql(*sql_dict, raise_error=None, cursor_factory=None):
     result = None
     error = None
@@ -663,4 +719,14 @@ def is_safe_url(target):
 
 if __name__ == "__main__":
     create_secrets_file('gmail_secrets')
+    scheduler.add_job(func=process_adopted,
+                      trigger='interval',
+                      name='adopted-cron',
+                      replace_existing=True,
+                      max_instances=1,
+                      hours=24,
+                      next_run_time=datetime.datetime.utcnow())
+    app.logger.info('starting scheduler')
+    scheduler.start()
+    scheduler.print_jobs()
     waitress.serve(app, port=os.environ.get('PORT', 5000))
