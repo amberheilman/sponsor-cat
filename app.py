@@ -81,6 +81,11 @@ INSERT_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                       '            cat_self_link, cat_img, cat_name,'
                       '            petfinder_id)'
                       '     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)')
+INSERT_INTENT = ('INSERT INTO intents (id, sponsored_at, '
+                 '            sponsor_amount,'
+                 '            cat_self_link, cat_img, cat_name,'
+                 '            petfinder_id)'
+                 '     VALUES (%s, %s, %s, %s, %s, %s, %s)')
 INSERT_MANUAL_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
                              '            sponsor_amount, payment_type,'
                              '            name, email, cat_self_link, '
@@ -304,6 +309,25 @@ def notify_of_sponsorship(sponsor_id, **body):
     send_email(recipients, 'recipient-email',
                f"{body['cat_name']} is sponsored!",
                **body)
+
+
+@app.route("/intent", methods=['POST', 'OPTIONS'])
+def intent():
+    if flask.request.method == 'POST':
+        body = flask.request.get_json()
+        app.logger.debug('Received intent: %r', body)
+        execute_sql({'sql': INSERT_INTENT,
+                     'values': (body['intent_id'],
+                                body['create_time'],
+                                body['sponsor_amount'],
+                                body['cat_self_link'],
+                                body['cat_img'],
+                                body['cat_name'],
+                                body['petfinder_id'])})
+    response = flask.Response()
+    response.headers['Access-Control-Allow-Origin'] = TRUSTED_ORIGINS
+    response.headers['Access-Control-Allow-Headers'] = 'content-type'
+    return response
 
 
 @app.route("/sponsor", methods=['POST', 'OPTIONS'])
