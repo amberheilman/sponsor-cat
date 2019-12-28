@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.1
+-----
+- Fix sponsorship_emails update
+
 1.2.0
 -----
 - Add intents for intended sponsorships
