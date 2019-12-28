@@ -438,7 +438,7 @@ def process_adopted():
             execute_sql({'sql': "UPDATE sponsorship_emails "
                                 "   SET adoption_status='adopted',"
                                 "       modified_at=now() at time zone 'utc'"
-                                " WHERE id=%s",
+                                " WHERE sponsorship_id=%s",
                          'values': [sponsorship_id]})
             app.logger.info('sending email to:%s for adopted cat '
                             'sponsor_id:%s name:%s',
