@@ -11,6 +11,7 @@ import urllib
 
 from apiclient import discovery
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 import arrow
 from cryptography.fernet import Fernet
 from oauth2client.client import flow_from_clientsecrets
@@ -720,12 +721,17 @@ def is_safe_url(target):
 if __name__ == "__main__":
     create_secrets_file('gmail_secrets')
     scheduler.add_job(func=process_adopted,
-                      trigger='interval',
+                      trigger=IntervalTrigger(
+                          hours=24,
+                          start_date=datetime.datetime.utcnow().replace(
+                              hour=12,
+                              minute=0,
+                              second=0,
+                              microsecond=0,
+                              tzinfo=utc)),
                       name='adopted-cron',
                       replace_existing=True,
-                      max_instances=1,
-                      hours=24,
-                      next_run_time=datetime.datetime.utcnow())
+                      max_instances=1)
     app.logger.info('starting scheduler')
     scheduler.start()
     scheduler.print_jobs()
