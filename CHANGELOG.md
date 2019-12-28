@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.2.0
+-----
+- Add intents for intended sponsorships
+- Add postgres reconnect logic for network and database temporary failures
+- Add background scheduler for adopted cat emails
+
 1.1.4
 -----
 - Fix cors trusted origins header not being returned

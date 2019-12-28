@@ -14,7 +14,7 @@ except FileNotFoundError:
 
 setup(
     name='sponsorcat',
-    version='1.1.4',
+    version='1.2.0',
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',
