@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.2
+-----
+- Add sponsor amounts $190, $210 to manual sponsorship
+
 1.2.1
 -----
 - Fix sponsorship_emails update

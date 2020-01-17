@@ -119,13 +119,10 @@
           <div class="form-group">
             <label for="sponsorAmount">Sponsor Amount</label>
             <select class="form-control form-control-lg" id="sponsorAmount" name="sponsor_amount">
-                {% if fields.get('sponsor_amount') == '95.00' %}
-                  <option value="95.00" selected>$95.00</option>
-                  <option value="105.00">$105.00</option>
-                {% else %}
-                  <option value="95.00">$95.00</option>
-                  <option value="105.00" selected>$105.00</option>
-                {% endif %}
+                  <option value="95.00" {{ 'selected' if fields.get('sponsor_amount') == '95.00' else '' }}>$95.00</option>
+                  <option value="105.00" {{ 'selected' if fields.get('sponsor_amount') == '105.00' else '' }}>$105.00</option>
+                  <option value="190.00" {{ 'selected' if fields.get('sponsor_amount') == '190.00' else '' }}>$190.00</option>
+                  <option value="210.00" {{ 'selected' if fields.get('sponsor_amount') == '210.00' else '' }}>$210.00</option>
             </select>
           </div>
 

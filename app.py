@@ -691,7 +691,8 @@ class SponsorForm(Form):
     email = StringField('Email Address', [validators.Length(min=6, max=35)])
     sponsor_amount = StringField('Sponsor Amount',
                                  [validators.DataRequired(),
-                                  validators.AnyOf(('95.00', '105.00'))])
+                                  validators.AnyOf(('95.00', '105.00',
+                                                    '190.00', '210.00'))])
     payment_type = StringField('Payment Type',
                                [validators.DataRequired(),
                                 validators.AnyOf(('cash', 'check'))])
