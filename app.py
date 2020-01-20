@@ -229,7 +229,7 @@ def make_petfinder_request(url):
         if response.status_code != 200:
             app.logger.warning('Error making request to url:%r error:%r',
                                url,
-                               token_response.content)
+                               response.content)
             return
     return response.json()
 
