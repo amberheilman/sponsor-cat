@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.0
+-----
+- Add new mobile index view
+- Add search totals on index
+- Remove new sponsor beta flag
+- Fix logging wrong response content on error
+
 1.2.2
 -----
 - Add sponsor amounts $190, $210 to manual sponsorship
