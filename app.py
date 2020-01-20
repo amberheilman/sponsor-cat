@@ -157,7 +157,19 @@ def index():
                        cursor_factory=RealDictCursor)
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
-    return flask.render_template('index.html', cats=cats, scheme=scheme)
+
+    if flask.request.args.get('view') == 'mobile':
+        for cat in cats:
+            email_hash = hashlib.md5(
+                cat['email'].encode('utf-8').strip().lower()).hexdigest()
+            cat['gravatar'] = f'https://www.gravatar.com/avatar/{email_hash}'
+        return flask.render_template('mobile-sponsorships.html',
+                                     cats=cats,
+                                     scheme=scheme)
+    else:
+        return flask.render_template('index.html',
+                                     cats=cats,
+                                     scheme=scheme)
 
 
 @app.route('/', methods=['GET', 'POST'])

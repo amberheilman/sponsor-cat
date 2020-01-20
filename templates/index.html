@@ -70,6 +70,7 @@
     </nav>
     <div class="container">
       <div class="search-container">
+          <div class="views"><a href="{{ url_for('index', _external=True, _scheme=scheme, view='desktop') }}">Desktop</a> | <a href="{{ url_for('index', _external=True, _scheme=scheme, view='mobile') }}">Mobile</a></div>
           <input type="text" id="search" class="search" onkeyup="search()" placeholder="Search">
           {% if cats %}
               <span id="cat-total">Total: {{ cats|length }} </span>
