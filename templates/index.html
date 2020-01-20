@@ -17,11 +17,13 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script>
     function search() {
-        let input, filter, table, tr, td, th, i, x, txtValue, match;
+        let input, filter, table, tr, td, th, i, x, txtValue, match, cat_total, total;
         input = document.getElementById("search");
         filter = input.value.toUpperCase();
         table = document.getElementById("sponsorTable");
         tr = table.getElementsByTagName("tr");
+        cat_total = document.getElementById("cat-total");
+        total = 0;
 
         for (i = 1; i < tr.length; i++) { // for each row
             td = tr[i].getElementsByTagName("td");
@@ -36,7 +38,9 @@
                 }
             }
             if (match) {
+                total++;
                 tr[i].style.display = "";
+                cat_total.innerText = 'Total: ' + total;
             } else {
                 tr[i].style.display = "none";
             }
@@ -64,8 +68,15 @@
         </ul>
       </div>
     </nav>
-  <input type="text" id="search" class="search" onkeyup="search()" placeholder="Search">
-  <div class="table-container">
+    <div class="container">
+      <div class="search-container">
+          <input type="text" id="search" class="search" onkeyup="search()" placeholder="Search">
+          {% if cats %}
+              <span id="cat-total">Total: {{ cats|length }} </span>
+          {% endif %}
+      </div>
+    </div>
+    <div class="table-container">
     <table id="sponsorTable" class="table">
       <thead>
         <tr>
