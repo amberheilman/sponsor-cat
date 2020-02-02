@@ -50,27 +50,32 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
-      <a class="navbar-brand" href="#">SponsorCat</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav">
-          <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('index', _external=True, _scheme=scheme) }}">Sponsorships<span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('sponsor_emails', _external=True, _scheme=scheme) }}">Emails</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('manual_sponsor', _external=True, _scheme=scheme) }}">Create Sponsorship</a>
-          </li>
-        </ul>
-      </div>
+        <a class="navbar-brand" href="#">SponsorCat</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Sponsorships
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <a class="dropdown-item" href="{{ url_for('index', _external=True, _scheme=scheme, view='all') }}">All sponsorships</a>
+                      <a class="dropdown-item" href="{{ url_for('index', _external=True, _scheme=scheme, view='cat') }}">Sponsorships by cat</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor_emails', _external=True, _scheme=scheme) }}">Emails</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('manual_sponsor', _external=True, _scheme=scheme) }}">Create Sponsorship</a>
+                </li>
+            </ul>
+        </div>
     </nav>
     <div class="container">
       <div class="search-container">
-          <div class="views"><a href="{{ url_for('index', _external=True, _scheme=scheme, view='desktop') }}">Desktop</a> | <a href="{{ url_for('index', _external=True, _scheme=scheme, view='mobile') }}">Mobile</a></div>
           <input type="text" id="search" class="search" onkeyup="search()" placeholder="Search">
           {% if cats %}
               <span id="cat-total">Total: {{ cats|length }} </span>
