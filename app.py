@@ -156,6 +156,7 @@ def get_cursor(*args, **kwargs):
 
 
 @app.route("/index", methods=['GET'])
+@login_required
 def index():
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
