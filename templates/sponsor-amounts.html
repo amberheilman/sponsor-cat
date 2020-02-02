@@ -97,7 +97,7 @@
                         <div class="card-header">
                             <h5 class="card-title">{{ cat['cat_name'] }}</h5>
                             <h4 class="card-title">
-                                ${{ cat['sponsor_amount'] }}</h4>
+                                ${{  }}</h4>
                                 {% if cat['payment_type'] == 'paypal' %}
                                     <h6>
                                         <img class="payment-text" src="{{ url_for('static', filename='cc-paypal-brands.svg', _external=True, _scheme=scheme) }}">
@@ -121,7 +121,7 @@
                         <div class="card-body">
 
                             <div class="card-text">
-                                <img src="{{ cat['gravatar'] }}" class="sponsor-img">
+                                <p>{{ cat['sponsor_amount'] }}</p>
                                 <p class="card-text">{{ cat['name'] }} </p>
                                 <p> {{ cat['email'] }}</p>
                             </div>
