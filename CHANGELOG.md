@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.1
+-----
+- Add sponsor_amounts table
+- Add view of partial sponsorships
+- Update sponsor_amounts from manual sponsorship only
+- Update navigation for partial sponsorship page
+
 1.3.0
 -----
 - Add new mobile index view
