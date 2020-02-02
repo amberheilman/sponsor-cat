@@ -16,7 +16,7 @@
     <link rel="mask-icon" href="{{ url_for('static', filename='favicon.ico', _external=True, _scheme=scheme) }}"
           color="#5bbad5">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css', _external=True, _scheme=scheme) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sponsorships-by-cat.css', _external=True, _scheme=scheme) }}">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
@@ -77,61 +77,72 @@
     </div>
 </nav>
 <div class="container">
-
     <div class="search-container">
-        <div class="views"><a href="{{ url_for('index', _external=True, _scheme=scheme, view='desktop') }}">Desktop</a> | <a href="{{ url_for('index', _external=True, _scheme=scheme, view='mobile') }}">Mobile</a></div>
         <input type="text" id="search" class="search" onkeyup="search()" placeholder="Search">
         {% if cats %}
             <span id="cat-total">Total: {{ cats|length }} </span>
-        {% endif %}    </div>
+        {% endif %}
+    </div>
     <div id="sponsorTable" class="results-container">
         {% for cat in cats %}
-            <div id="cat-card" class="card mb-0">
-                <div class="row no-gutters">
-                    <div class="row-img col-md-6">
-                        <a href="{{ cat['cat_self_link'] }}">
-                            <img class="card-img" src="{{ cat['cat_img'] }}" alt="{{ cat['cat_img'] }}">
+            <div id="cat-card" class="card">
+                <div style="max-width:100%;">
+                    <div class="card-header">
+                        <h5 class="card-title" style="text-align:center; margin:0;">{{ cat['sponsorships'][0]['f8'] }}</h5>
+                    </div>
+                </div>
+                <div>
+                    <div class="row-img">
+                        <a href="{{ cat['sponsorships'][0]['f6'] }}">
+                            <img class="card-img" src="{{ cat['sponsorships'][0]['f7'] }}" alt="{{ cat['sponsorships'][0]['f7'] }}">
                         </a>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card-header">
-                            <h5 class="card-title">{{ cat['cat_name'] }}</h5>
-                            <h4 class="card-title">
-                                ${{ cat['sponsor_amount'] }}</h4>
-                                {% if cat['payment_type'] == 'paypal' %}
-                                    <h6>
-                                        <img class="payment-text" src="{{ url_for('static', filename='cc-paypal-brands.svg', _external=True, _scheme=scheme) }}">
-                                        <small>{{ cat['paypal_order_id'] }}</small>
-                                    </h6>
-                                {% elif cat['payment_type'] == 'check' %}
-                                    <h6>
-                                        <img class="payment-text" src="{{ url_for('static', filename='money-check-alt-solid.svg', _external=True, _scheme=scheme) }}">
-                                        <small>{{ cat['payment_type'].title() }}</small>
-                                    </h6>
-                                {% elif cat['payment_type'] == 'cash' %}
-                                    <h6>
-                                        <img class="payment-text" src="{{ url_for('static', filename='money-bill-alt-regular.svg', _external=True, _scheme=scheme) }}">
-                                        <small>{{ cat['payment_type'].title() }}</small>
-                                    </h6>
-                                {% endif %}
-                            <span title="{{ cat['sponsored_at'] }}">
-                                <h6>{{ cat['sponsored_at'].strftime('%b %d, %Y %H:%M %p %Z') }}</h6>
+                    <div>
+                      <div class="progress" style="width: 100%;height: 30px; border-radius: 0px; margin-bottom:0;">
+                        <div class="progress-bar" role="progressbar" style=" width: {{ ((cat['sponsorships'] | sum(attribute='f2')) / cat['sponsor_amount'] | int) * 100 | round(2, 'floor') }}%;
+                                {% if (cat['sponsorships'] | sum(attribute='f2') / cat['sponsor_amount'] | int) | round(1, 'floor') * 100 == 100 %}background-color: #71b371c7; {% else %}
+                                background-color: rgba(82, 184, 209, 0.56); color: black;"{% endif %}
+                             aria-valuenow="{{ cat['sponsorships'] | sum(attribute='f2') }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ (cat['sponsorships'] | sum(attribute='f2') / cat['sponsor_amount'] | int) | round(2, 'floor') * 100 }}%</div>
+                      </div>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <span>
+                            <p style="text-align: center; margin:0; font-size: 0.8em;">Sponsorships ( ${{ cat['sponsorships'] | sum(attribute='f2') | int }} / ${{ cat['sponsor_amount'] }} )</p>
+                            {#                                <h6>{{ sponsorship['f1'].strftime('%b %d, %Y %H:%M %p %Z') }}</h6>#}
                             </span>
-                        </div>
-                        <div class="card-body">
+                        </li>
+                        {% for sponsorship in cat['sponsorships'] %}
+                            <li class="list-group-item">
+                                <h6>
+                                ${{ '%0.2f' | format(sponsorship['f2'] | float) }}
 
-                            <div class="card-text">
-                                <img src="{{ cat['gravatar'] }}" class="sponsor-img">
-                                <p class="card-text">{{ cat['name'] }} </p>
-                                <p> {{ cat['email'] }}</p>
-                            </div>
-
-                        </div>
+                                {% if sponsorship['f10'] | lower == 'paypal' %}
+                                        <img class="payment-text" src="{{ url_for('static', filename='cc-paypal-brands.svg', _external=True, _scheme=scheme) }}">
+                                        <small>{{ sponsorship['f5'] }}</small>
+                                {% elif sponsorship['f10'] | lower == 'check' %}
+                                        <img class="payment-text" src="{{ url_for('static', filename='money-check-alt-solid.svg', _external=True, _scheme=scheme) }}">
+                                        <small>{{ sponsorship['f10'].title() }}</small>
+                                {% elif sponsorship['f10'] | lower == 'cash' %}
+                                        <img class="payment-text" src="{{ url_for('static', filename='money-bill-alt-regular.svg', _external=True, _scheme=scheme) }}">
+                                        <small>{{ sponsorship['f10'].title() }}</small>
+                                {% elif sponsorship['f10'] | lower == 'petfinder' %}
+                                        <img class="payment-text" src="{{ url_for('static', filename='cat-solid.svg', _external=True, _scheme=scheme) }}">
+                                        <small>{{ sponsorship['f10'].title() }}</small>
+                                {% endif %}
+                                </h6>
+                                <div class="card-text">
+                                    <p>
+                                    {{ sponsorship['f3'] }}
+                                    {{ sponsorship['f4'] }}</p>
+                                </div>
+                            </li>
+                      </ul>
+                    {% endfor %}
                     </div>
                 </div>
             </div>
         {% endfor %}
-
     </div>
     {% if not cats %}
         <h2 class="center">No sponsorships found</h2>

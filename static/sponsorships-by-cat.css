@@ -29,6 +29,9 @@ table tr:last-child td:last-child {
 
 }
 .row-img img {
+    width: 100%;
+    max-height: 300px;
+    height: 300px;
     /*object-fit: contain;*/
     object-fit: cover;
     opacity: 1;
@@ -48,7 +51,7 @@ table tr:last-child td:last-child {
     align-items: flex-end;
 }
 .search-container span {
-    padding: 12px 20px 12px 40px;
+    padding: 12px 20px 12px 10px;
 }
 thead {
     background-color: #363636;
@@ -56,7 +59,7 @@ thead {
 }
 .search {
     margin-top: 2.5%;
-    padding: 12px 20px 12px 40px;
+    padding: 12px 20px 12px 10px;
     width: 30%;
     font-size: 20px;
 }
@@ -81,7 +84,7 @@ thead {
     justify-content: space-around;
 }
 .card {
-    max-width: 500px;
+    max-width: 370px;
     margin: 20px 0px 0px 0px;
     /*width: 100%;*/
     /*max-height: 300px;*/
@@ -108,7 +111,7 @@ thead {
     height: 30px;
 }
 .card-header {
-    background-color: rgb(241, 247, 248);
+    background-color: rgba(82, 186, 209, 0.17);
 }
 .sponsor-img {
     border-radius: 25px;
@@ -130,13 +133,13 @@ small {
 }
 
 @media (min-width: 992px) {
-.row, .row-img, .card-img {
+.max-height {
     height: 100%;
 }
 }
 
 @media (min-width: 1200px) {
-.row, .row-img, .card-img {
+.max-height {
     height: 100%;
 }
 }

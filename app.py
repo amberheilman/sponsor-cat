@@ -97,14 +97,19 @@ INSERT_INTENT = ('INSERT INTO intents (id, sponsored_at, '
                  '            cat_self_link, cat_img, cat_name,'
                  '            petfinder_id)'
                  '     VALUES (%s, %s, %s, %s, %s, %s, %s)')
-INSERT_MANUAL_SPONSORSHIP = ('INSERT INTO sponsorships (id, sponsored_at, '
+INSERT_MANUAL_SPONSORSHIP = ('BEGIN; '
+                             'INSERT INTO sponsor_amounts'
+                             ' (petfinder_id, sponsor_amount, '
+                             '  sponsor_increments)'
+                             '     VALUES (%s, %s, %s); '
+                             'INSERT INTO sponsorships (id, sponsored_at, '
                              '            sponsor_amount, payment_type,'
                              '            name, email, cat_self_link, '
                              '            cat_img, cat_name,'
                              '            petfinder_id)'
                              '     VALUES (%s, %s, %s, %s, %s, %s, %s,'
-                             '             %s, %s, %s)')
-SELECT_SPONSORSHIPS = 'SELECT * FROM sponsorships ORDER BY sponsored_at DESC'
+                             '             %s, %s, %s); '
+                             'COMMIT;')
 SELECT_SPONSORSHIPS_BY_ID = ('SELECT petfinder_id FROM sponsorships'
                              ' WHERE petfinder_id IN ({})')
 SELECT_RECIPIENTS = "SELECT * FROM recipients WHERE email_subscription='on'"
@@ -151,25 +156,39 @@ def get_cursor(*args, **kwargs):
 
 
 @app.route("/index", methods=['GET'])
-@login_required
 def index():
-    cats = execute_sql({'sql': SELECT_SPONSORSHIPS, 'fetchall': True},
-                       cursor_factory=RealDictCursor)
     scheme = 'https' \
         if os.environ.get('ENVIRONMENT') == 'production' else 'http'
-
-    if flask.request.args.get('view') == 'mobile':
-        for cat in cats:
-            email_hash = hashlib.md5(
-                cat['email'].encode('utf-8').strip().lower()).hexdigest()
-            cat['gravatar'] = f'https://www.gravatar.com/avatar/{email_hash}'
-        return flask.render_template('mobile-sponsorships.html',
+    if flask.request.args.get('view') == 'cat':
+        cats = execute_sql(
+            {'sql': """     SELECT json_agg((sponsorships.sponsored_at,
+                                   sponsorships.sponsor_amount,
+                                   sponsorships.name,
+                                   sponsorships.email,
+                                   sponsorships.paypal_order_id,
+                                   sponsorships.cat_self_link,
+                                   sponsorships.cat_img,
+                                   sponsorships.cat_name,
+                                   sponsorships.petfinder_id,
+                                   sponsorships.payment_type)) sponsorships,
+                                   sponsor_amounts.petfinder_id,
+                                   sponsor_amounts.sponsor_amount,
+                                   sponsor_amounts.sponsor_increments
+                              FROM sponsor_amounts
+                        INNER JOIN sponsorships USING (petfinder_id)
+                          GROUP BY petfinder_id;""",
+             'fetchall': True},
+            cursor_factory=RealDictCursor)
+        return flask.render_template('sponsorships-by-cat.html',
                                      cats=cats,
                                      scheme=scheme)
-    else:
-        return flask.render_template('index.html',
-                                     cats=cats,
-                                     scheme=scheme)
+    cats = execute_sql(
+        {'sql': 'SELECT * FROM sponsorships ORDER BY sponsored_at DESC',
+         'fetchall': True},
+        cursor_factory=RealDictCursor)
+    return flask.render_template('index.html',
+                                 cats=cats,
+                                 scheme=scheme)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -295,7 +314,10 @@ def manual_sponsor():
             body = flask.request.form
             sponsor_id = str(uuid.uuid4())
             execute_sql({'sql': INSERT_MANUAL_SPONSORSHIP,
-                         'values': (sponsor_id,
+                         'values': (body['petfinder_id'],
+                                    body['sponsor_amount'],
+                                    body['sponsor_amount'],
+                                    sponsor_id,
                                     body.get('create_time',
                                              arrow.utcnow().isoformat()),
                                     body['sponsor_amount'],
