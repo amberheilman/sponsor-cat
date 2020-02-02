@@ -51,7 +51,7 @@ img {
     align-items: flex-end;
 }
 .search-container span {
-    padding: 12px 20px 12px 40px;
+    padding: 12px 20px 12px 10px;
 }
 thead {
     background-color: #363636;
@@ -59,7 +59,7 @@ thead {
 }
 .search {
     margin-top: 2.5%;
-    padding: 12px 20px 12px 40px;
+    padding: 12px 20px 12px 10px;
     width: 30%;
     font-size: 20px;
 }
