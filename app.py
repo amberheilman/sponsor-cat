@@ -231,7 +231,7 @@ def make_petfinder_request(url):
             data={'grant_type': 'client_credentials',
                   'client_id': PETFINDER_CLIENT_ID,
                   'client_secret': PETFINDER_CLIENT_SECRET},
-            timeout=(3.05, 3))
+            timeout=(6.05, 6))
     except (OSError, socket.error, requests.exceptions.RequestException) as e:
         app.logger.warning('Error making request to url:%r error:%r', url, e)
         return
@@ -245,7 +245,7 @@ def make_petfinder_request(url):
         app.logger.info('Getting url %s', url)
         response = requests.get(url,
                                 headers={'Authorization': f'Bearer {token}'},
-                                timeout=(3.05, 3))
+                                timeout=(6.05, 6))
         if response.status_code != 200:
             app.logger.warning('Error making request to url:%r error:%r',
                                url,
@@ -416,10 +416,14 @@ def get_sponsored():
     body = flask.request.get_json()
     app.logger.debug('Received body %r', body)
     cat_ids = [int(_id) for _id in body['cat_ids']]
-    sql = SELECT_SPONSORSHIPS_BY_ID.format(
-        ('%s, ' * len(cat_ids)).rstrip(', '))
-    data = {'cat_ids': [row[0] for row in execute_sql(
-        {'sql': sql, 'values': cat_ids, 'fetchall': True})]}
+    data = {'cat_ids': []}
+    if cat_ids:
+        sql = SELECT_SPONSORSHIPS_BY_ID.format(
+            ('%s, ' * len(cat_ids)).rstrip(', '))
+        results = execute_sql({'sql': sql,
+                               'values': cat_ids,
+                               'fetchall': True})
+        data['cat_ids'] = [row[0] for row in results if results]
     return flask.jsonify(data)
 
 
@@ -469,7 +473,7 @@ def process_adopted():
         # check to see if the cats were adopted in the last day
         link = BASE_PETFINDER_URL / str(cat_id)
         cat = make_petfinder_request(link)
-        if cat['animal']['status'] == 'adopted':
+        if cat and cat['animal']['status'] == 'adopted':
             app.logger.info('updating cat id:%s to adopted', cat_id)
             execute_sql({'sql': "UPDATE sponsorship_emails "
                                 "   SET adoption_status='adopted',"
