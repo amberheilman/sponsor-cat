@@ -346,7 +346,7 @@ def manual_sponsor():
 def notify_of_sponsorship(sponsor_id, **body):
     send_email(body['email'],
                'thank-you-email',
-               f"Thank you for sponsoring {body['cat_name']}",
+               f"Thank you for sponsoring {body['cat_name']}'s care",
                signup_url=f'{BASE_SPONSOR_JOURNEY_URL}/{sponsor_id}',
                **body)
     recipients = ', '.join([row[1] for row in execute_sql(
@@ -395,7 +395,7 @@ def sponsor():
                                 body['petfinder_id'])})
         send_email(body['email'],
                    'thank-you-email',
-                   f"Thank you for sponsoring {body['cat_name']}",
+                   f"Thank you for sponsoring {body['cat_name']}'s care",
                    signup_url=f'{BASE_SPONSOR_JOURNEY_URL}/{sponsor_id}',
                    **body)
         recipients = ', '.join([row[1] for row in execute_sql(

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.3.2
+-----
+- Update language in emails for seadragon
+
 1.3.1
 -----
 - Add sponsor_amounts table
