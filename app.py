@@ -9,7 +9,7 @@ import os
 import socket
 import urllib
 
-from apiclient import discovery
+import apiclient.discovery
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import arrow
@@ -582,8 +582,8 @@ def send_email(recipients, template_name, subject, **kwargs):
             credentials.refresh(Request())
         else:
             raise Exception('Do not have valid credentials for gmail!')
-    service = discovery.build('gmail', 'v1', credentials=credentials,
-                              cache_discovery=False)
+    service = apiclient.discovery.build('gmail', 'v1', credentials=credentials,
+                                        cache_discovery=False)
     with open(f'templates/{template_name}.html', 'r') as f:
         email = f.read().format(**kwargs)
     message = MIMEText(email, 'html')
