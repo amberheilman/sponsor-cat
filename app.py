@@ -467,7 +467,7 @@ def process_adopted():
                      "              ON sponsorships.id=sponsorship_id"
                      "           WHERE adoption_status != 'adopted';")
     results = execute_sql({'sql': adoptable_sql, 'fetchall': True})
-    for result in results:
+    for result in results or []:
         sponsorship_id, cat_id, cat_name, cat_url, cat_img, email = result
 
         # check to see if the cats were adopted in the last day
